@@ -2,8 +2,7 @@ CLANG = clang
 
 EXECABLE = monitor-exec.o
 
-PICK_NEXT_TASK_KRETPROBE_BPF = oberon_probes/pick_next_task_finishes
-FINISH_TASK_SWITCH_KPROBE_BPF = oberon_probes/finish_task_switch_entry
+SCHED_SWITCH_TRACER_BPF = oberon_probes/sched/sched_switch
 
 KERNEL_SRC = /lib/modules/5.10.102.1-custom-Jesson-Yo+/build/
 BPFTOOLS = $(KERNEL_SRC)/samples/bpf
@@ -44,15 +43,12 @@ CFLAGS += $(shell grep -q "define HAVE_ATTR_TEST 1" $(KERNEL_SRC)/tools/perf/per
 clean:
 	rm -f *.o *.so $(EXECABLE)
 
-build_pick_next_task_kretprobe_bpf: ${PICK_NEXT_TASK_KRETPROBE_BPF.c} ${BPFLOADER}
-	$(CLANG) -O2 -target bpf -c $(PICK_NEXT_TASK_KRETPROBE_BPF:=.c) $(CCINCLUDE) -o ${PICK_NEXT_TASK_KRETPROBE_BPF:=.o} 
+build_sched_switch_tracer: ${SCHED_SWITCH_TRACER_BPF.c} ${BPFLOADER}
+	$(CLANG) -O2 -target bpf -c $(SCHED_SWITCH_TRACER_BPF:=.c) $(CCINCLUDE) -o ${SCHED_SWITCH_TRACER_BPF:=.o} 
 
-build_finish_task_switch_kprobe_bpf: ${FINISH_TASK_SWITCH_KPROBE_BPF.c} ${BPFLOADER}
-	$(CLANG) -O2 -target bpf -c $(FINISH_TASK_SWITCH_KPROBE_BPF:=.c) $(CCINCLUDE) -o ${FINISH_TASK_SWITCH_KPROBE_BPF:=.o} 
-
-bpfload: build_pick_next_task_kretprobe_bpf build_finish_task_switch_kprobe_bpf
+bpfload: build_sched_switch_tracer
 	clang $(CFLAGS) -o $(EXECABLE) -lelf $(LOADINCLUDE) $(LIBRARY_PATH) $(BPFSO) \
-        $(BPFLOADER) $(BPFTEST) loader.c
+        $(BPFLOADER) $(BPFTEST) loader.c -I /lib/modules/5.10.102.1-custom-Jesson-Yo+/build/
 
 $(EXECABLE): bpfload
 
