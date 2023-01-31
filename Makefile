@@ -44,6 +44,7 @@ CFLAGS += $(shell grep -q "define HAVE_ATTR_TEST 1" $(KERNEL_SRC)/tools/perf/per
 
 clean:
 	rm -f *.o *.so $(EXECABLE)
+	rm -f oberon_probes/sched/*.o
 
 build_sched_wakeup_probe: ${SCHED_WAKEUP_PROBE_BPF.c} ${BPFLOADER}
 	$(CLANG) -O2 -target bpf -c $(SCHED_WAKEUP_PROBE_BPF:=.c) $(CCINCLUDE) -o ${SCHED_WAKEUP_PROBE_BPF:=.o} 

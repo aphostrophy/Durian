@@ -4,6 +4,7 @@
       "name": "Linux",
       "includePath": [
         "${workspaceFolder}/**",
+        "/lib/modules/5.10.102.1-custom-Jesson-Yo+/build/**",
         "/lib/modules/5.10.102.1-custom-Jesson-Yo+/build/tools/testing/selftests/bpf",
         "/lib/modules/5.10.102.1-custom-Jesson-Yo+/build/samples/bpf"
       ],
