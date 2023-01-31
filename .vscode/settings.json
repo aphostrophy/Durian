@@ -12,7 +12,8 @@
     "bpf.h": "c",
     "bpf_load.h": "c",
     "trace_helpers.h": "c",
-    "types.h": "c"
+    "bpf_tracing.h": "c",
+    "bpf_helpers.h": "c"
   },
   "C_Cpp.errorSquiggles": "enabledIfIncludesResolve"
 }

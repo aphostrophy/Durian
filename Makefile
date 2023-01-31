@@ -1,8 +1,9 @@
 CLANG = clang
 
-EXECABLE = monitor-exec.o
+EXECABLE = oberon
 
-SCHED_SWITCH_TRACER_BPF = oberon_probes/sched/sched_switch
+SCHED_WAKEUP_PROBE_BPF = oberon_probes/sched/sched_wakeup
+SCHED_SWITCH_PROBE_BPF = oberon_probes/sched/sched_switch
 
 KERNEL_SRC = /lib/modules/5.10.102.1-custom-Jesson-Yo+/build/
 BPFTOOLS = $(KERNEL_SRC)/samples/bpf
@@ -43,10 +44,13 @@ CFLAGS += $(shell grep -q "define HAVE_ATTR_TEST 1" $(KERNEL_SRC)/tools/perf/per
 clean:
 	rm -f *.o *.so $(EXECABLE)
 
-build_sched_switch_tracer: ${SCHED_SWITCH_TRACER_BPF.c} ${BPFLOADER}
-	$(CLANG) -O2 -target bpf -c $(SCHED_SWITCH_TRACER_BPF:=.c) $(CCINCLUDE) -o ${SCHED_SWITCH_TRACER_BPF:=.o} 
+build_sched_wakeup_probe: ${SCHED_WAKEUP_PROBE_BPF.c} ${BPFLOADER}
+	$(CLANG) -O2 -target bpf -c $(SCHED_WAKEUP_PROBE_BPF:=.c) $(CCINCLUDE) -o ${SCHED_WAKEUP_PROBE_BPF:=.o} 
 
-bpfload: build_sched_switch_tracer
+build_sched_switch_probe: ${SCHED_SWITCH_PROBE_BPF.c} ${BPFLOADER}
+	$(CLANG) -O2 -target bpf -c $(SCHED_SWITCH_PROBE_BPF:=.c) $(CCINCLUDE) -o ${SCHED_SWITCH_PROBE_BPF:=.o} 
+
+bpfload: build_sched_switch_probe build_sched_wakeup_probe
 	clang $(CFLAGS) -o $(EXECABLE) -lelf $(LOADINCLUDE) $(LIBRARY_PATH) $(BPFSO) \
         $(BPFLOADER) $(BPFTEST) loader.c -I /lib/modules/5.10.102.1-custom-Jesson-Yo+/build/
 
