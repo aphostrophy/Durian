@@ -20,6 +20,8 @@ LOADINCLUDE += -I$(KERNEL_SRC)/tools/perf
 LOADINCLUDE += -I$(KERNEL_SRC)/tools/include
 LOADINCLUDE += -I$(KERNEL_SRC)/tools/testing/selftests/bpf
 
+OBERONINCLUDE += src/oberon_loader.c
+
 LIBRARY_PATH = -L/usr/local/lib64
 BPFSO = -lbpf
 
@@ -57,7 +59,7 @@ build_sched_process_wait_probe: ${SCHED_PROCESS_WAIT_PROBE_BPF.c} ${BPFLOADER}
 
 bpfload: build_sched_switch_probe build_sched_wakeup_probe build_sched_process_wait_probe
 	clang $(CFLAGS) -o $(EXECABLE) -lelf $(LOADINCLUDE) $(LIBRARY_PATH) $(BPFSO) \
-        $(BPFLOADER) $(BPFTEST) loader.c -I KERNEL_SRC
+        $(BPFLOADER) $(BPFTEST) $(OBERONINCLUDE) loader.c -I KERNEL_SRC
 
 $(EXECABLE): bpfload
 

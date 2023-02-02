@@ -13,7 +13,15 @@
     "bpf_load.h": "c",
     "trace_helpers.h": "c",
     "bpf_tracing.h": "c",
-    "bpf_helpers.h": "c"
+    "bpf_helpers.h": "c",
+    "version.h": "c",
+    "typeinfo": "c",
+    "libbpf.h": "c",
+    "errno.h": "c",
+    "stdio.h": "c",
+    "stddef.h": "c",
+    "stdarg.h": "c",
+    "oberon_loader.h": "c"
   },
   "C_Cpp.errorSquiggles": "enabledIfIncludesResolve"
 }
