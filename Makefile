@@ -8,6 +8,8 @@ SCHED_SWITCH_PROBE_BPF = oberon_probes/sched/sched_switch
 SCHED_PROCESS_WAIT_PROBE_BPF = oberon_probes/sched/sched_process_wait
 SCHED_PROCESS_EXIT_PROBE_BPF = oberon_probes/sched/sched_process_exit
 
+OBERON_MAPS = oberon_maps
+
 KERNEL_SRC = /lib/modules/5.10.102.1-custom-Jesson-Yo+/build/
 BPFTOOLS = $(KERNEL_SRC)/samples/bpf
 BPFLOADER = $(BPFTOOLS)/bpf_load.c
@@ -22,7 +24,7 @@ LOADINCLUDE += -I$(KERNEL_SRC)/tools/perf
 LOADINCLUDE += -I$(KERNEL_SRC)/tools/include
 LOADINCLUDE += -I$(KERNEL_SRC)/tools/testing/selftests/bpf
 
-OBERONINCLUDE += src/oberon_loader.c
+OBERONINCLUDE += oberon_maps.c
 
 LIBRARY_PATH = -L/usr/local/lib64
 BPFSO = -lbpf
@@ -50,20 +52,20 @@ clean:
 	rm -f *.o *.so $(EXECABLE)
 	rm -f oberon_probes/sched/*.o
 
-build_sched_wakeup_new_probe: ${SCHED_WAKEUP_NEW_PROBE_BPF.c} ${BPFLOADER}
-	$(CLANG) -O2 -target bpf -c $(SCHED_WAKEUP_NEW_PROBE_BPF:=.c) $(CCINCLUDE) -o ${SCHED_WAKEUP_NEW_PROBE_BPF:=.o} 
+build_sched_wakeup_new_probe: ${SCHED_WAKEUP_NEW_PROBE_BPF.c} ${OBERON_MAPS.c} ${BPFLOADER}
+	$(CLANG) -O2 -target bpf -c $(SCHED_WAKEUP_NEW_PROBE_BPF:=.c) $(OBERON_MAPS.c) $(CCINCLUDE) -o ${SCHED_WAKEUP_NEW_PROBE_BPF:=.o} 
 
-build_sched_wakeup_probe: ${SCHED_WAKEUP_PROBE_BPF.c} ${BPFLOADER}
-	$(CLANG) -O2 -target bpf -c $(SCHED_WAKEUP_PROBE_BPF:=.c) $(CCINCLUDE) -o ${SCHED_WAKEUP_PROBE_BPF:=.o} 
+build_sched_wakeup_probe: ${SCHED_WAKEUP_PROBE_BPF.c} ${OBERON_MAPS.c} ${BPFLOADER}
+	$(CLANG) -O2 -target bpf -c $(SCHED_WAKEUP_PROBE_BPF:=.c) $(OBERON_MAPS.c) $(CCINCLUDE) -o ${SCHED_WAKEUP_PROBE_BPF:=.o} 
 
-build_sched_switch_probe: ${SCHED_SWITCH_PROBE_BPF.c} ${BPFLOADER}
-	$(CLANG) -O2 -target bpf -c $(SCHED_SWITCH_PROBE_BPF:=.c) $(CCINCLUDE) -o ${SCHED_SWITCH_PROBE_BPF:=.o}
+build_sched_switch_probe: ${SCHED_SWITCH_PROBE_BPF.c} ${OBERON_MAPS.c} ${BPFLOADER}
+	$(CLANG) -O2 -target bpf -c $(SCHED_SWITCH_PROBE_BPF:=.c) $(OBERON_MAPS.c) $(CCINCLUDE) -o ${SCHED_SWITCH_PROBE_BPF:=.o}
 
-build_sched_process_wait_probe: ${SCHED_PROCESS_WAIT_PROBE_BPF.c} ${BPFLOADER}
-	$(CLANG) -O2 -target bpf -c $(SCHED_PROCESS_WAIT_PROBE_BPF:=.c) $(CCINCLUDE) -o ${SCHED_PROCESS_WAIT_PROBE_BPF:=.o}
+build_sched_process_wait_probe: ${SCHED_PROCESS_WAIT_PROBE_BPF.c} ${OBERON_MAPS.c} ${BPFLOADER}
+	$(CLANG) -O2 -target bpf -c $(SCHED_PROCESS_WAIT_PROBE_BPF:=.c) $(OBERON_MAPS.c) $(CCINCLUDE) -o ${SCHED_PROCESS_WAIT_PROBE_BPF:=.o}
 
-build_sched_process_exit_probe: ${SCHED_PROCESS_EXIT_PROBE_BPF.c} ${BPFLOADER}
-	$(CLANG) -O2 -target bpf -c $(SCHED_PROCESS_EXIT_PROBE_BPF:=.c) $(CCINCLUDE) -o ${SCHED_PROCESS_EXIT_PROBE_BPF:=.o}
+build_sched_process_exit_probe: ${SCHED_PROCESS_EXIT_PROBE_BPF.c} ${OBERON_MAPS.c} ${BPFLOADER}
+	$(CLANG) -O2 -target bpf -c $(SCHED_PROCESS_EXIT_PROBE_BPF:=.c) $(OBERON_MAPS.c) $(CCINCLUDE) -o ${SCHED_PROCESS_EXIT_PROBE_BPF:=.o}
 
 bpfload: build_sched_wakeup_new_probe \
 		 build_sched_switch_probe \
