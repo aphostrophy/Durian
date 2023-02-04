@@ -4,6 +4,7 @@
 #include <bpf/bpf.h>
 #include "trace_helpers.h"
 #include "src/oberon_loader.h"
+#include "bpf_load.h"
 
 #define PID_MAX 32768
 
@@ -42,25 +43,25 @@ int main(int argc, char **argv)
         }
     }
 
-    err = link_oberon_tracepoint_probe("oberon_probes/sched/sched_switch.o", "/sys/fs/bpf/oberon/sched_switch",
-                                       "sched",
-                                       "sched_switch");
+    err = link_oberon_tracepoint_probe("oberon_probes/sched/sched_switch.o");
     if (err)
     {
         printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
     }
 
-    err = link_oberon_tracepoint_probe("oberon_probes/sched/sched_wakeup.o", "/sys/fs/bpf/oberon/sched_wakeup",
-                                       "sched",
-                                       "sched_wakeup");
+    err = link_oberon_tracepoint_probe("oberon_probes/sched/sched_wakeup.o");
     if (err)
     {
         printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
     }
 
-    err = link_oberon_tracepoint_probe("oberon_probes/sched/sched_process_wait.o", "/sys/fs/bpf/oberon/sched_process_wait",
-                                       "sched",
-                                       "sched_process_wait");
+    err = link_oberon_tracepoint_probe("oberon_probes/sched/sched_process_wait.o");
+    if (err)
+    {
+        printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
+    }
+
+    err = link_oberon_tracepoint_probe("oberon_probes/sched/sched_wakeup_new.o");
     if (err)
     {
         printf("The kernel didn't load the BPF program: %s\n", strerror(errno));

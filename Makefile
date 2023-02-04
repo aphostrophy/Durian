@@ -2,6 +2,7 @@ CLANG = clang
 
 EXECABLE = oberon
 
+SCHED_WAKEUP_NEW_PROBE_BPF = oberon_probes/sched/sched_wakeup_new
 SCHED_WAKEUP_PROBE_BPF = oberon_probes/sched/sched_wakeup
 SCHED_SWITCH_PROBE_BPF = oberon_probes/sched/sched_switch
 SCHED_PROCESS_WAIT_PROBE_BPF = oberon_probes/sched/sched_process_wait
@@ -48,6 +49,9 @@ clean:
 	rm -f *.o *.so $(EXECABLE)
 	rm -f oberon_probes/sched/*.o
 
+build_sched_wakeup_new_probe: ${SCHED_WAKEUP_NEW_PROBE_BPF.c} ${BPFLOADER}
+	$(CLANG) -O2 -target bpf -c $(SCHED_WAKEUP_NEW_PROBE_BPF:=.c) $(CCINCLUDE) -o ${SCHED_WAKEUP_NEW_PROBE_BPF:=.o} 
+
 build_sched_wakeup_probe: ${SCHED_WAKEUP_PROBE_BPF.c} ${BPFLOADER}
 	$(CLANG) -O2 -target bpf -c $(SCHED_WAKEUP_PROBE_BPF:=.c) $(CCINCLUDE) -o ${SCHED_WAKEUP_PROBE_BPF:=.o} 
 
@@ -57,7 +61,7 @@ build_sched_switch_probe: ${SCHED_SWITCH_PROBE_BPF.c} ${BPFLOADER}
 build_sched_process_wait_probe: ${SCHED_PROCESS_WAIT_PROBE_BPF.c} ${BPFLOADER}
 	$(CLANG) -O2 -target bpf -c $(SCHED_PROCESS_WAIT_PROBE_BPF:=.c) $(CCINCLUDE) -o ${SCHED_PROCESS_WAIT_PROBE_BPF:=.o}
 
-bpfload: build_sched_switch_probe build_sched_wakeup_probe build_sched_process_wait_probe
+bpfload: build_sched_wakeup_new_probe build_sched_switch_probe build_sched_wakeup_probe build_sched_process_wait_probe
 	clang $(CFLAGS) -o $(EXECABLE) -lelf $(LOADINCLUDE) $(LIBRARY_PATH) $(BPFSO) \
         $(BPFLOADER) $(BPFTEST) $(OBERONINCLUDE) loader.c -I KERNEL_SRC
 

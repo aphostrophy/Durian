@@ -1,13 +1,13 @@
 #include "oberon_loader.h"
 
-int link_oberon_tracepoint_probe(const char *bpf_elf_path, const char *bpf_link_pin_path, const char *tp_category, const char *tp_name)
+int link_oberon_tracepoint_probe(const char *bpf_elf_path)
 {
     struct bpf_object *bpf_obj;
     struct bpf_program *bpf_prog;
     struct bpf_link *link;
     char *license = "GPL";
     __u32 kernel_version = LINUX_VERSION_CODE;
-    int err, prog_fd;
+    int err;
 
     bpf_obj = bpf_object__open(bpf_elf_path);
     bpf_prog = bpf_program__next(NULL, bpf_obj);
@@ -31,9 +31,7 @@ int link_oberon_tracepoint_probe(const char *bpf_elf_path, const char *bpf_link_
         return -1;
     }
 
-    prog_fd = bpf_program__fd(bpf_prog);
-
-    link = bpf_program__attach_tracepoint(bpf_prog, tp_category, tp_name);
+    link = bpf_program__attach(bpf_prog);
 
     if (!link)
     {
@@ -43,11 +41,15 @@ int link_oberon_tracepoint_probe(const char *bpf_elf_path, const char *bpf_link_
 
     assert(bpf_program__is_tracepoint(bpf_prog));
 
-    err = bpf_program__pin(bpf_prog, bpf_link_pin_path);
-    if (err)
-    {
-        fprintf(stderr, "ERR couldn't pin program");
-        return -1;
-    }
+    /*
+        bpf_link for perf based hooks isn't supported for the moment
+    */
+
+    // err = bpf_link__pin(link, bpf_link_pin_path);
+    // if (err)
+    // {
+    //     fprintf(stderr, "ERR couldn't pin link %s %s\n", bpf_link__pin_path(link), strerror(errno));
+    //     return -1;
+    // }
     return err;
 }

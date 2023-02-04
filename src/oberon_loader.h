@@ -6,7 +6,8 @@
 #include <bpf/bpf.h>
 #include <linux/version.h>
 #include <assert.h>
+#include <errno.h>
 
-int link_oberon_tracepoint_probe(const char *bpf_elf_path, const char *bpf_link_pin_path, const char *tp_category, const char *tp_name);
+int link_oberon_tracepoint_probe(const char *bpf_elf_path);
 
 #endif
