@@ -1,6 +1,7 @@
 #ifndef __OBERON_MAPS_H
 #define __OBERON_MAPS_H
 
+extern const char *pin_basedir;
 extern const char *task_time_stats_map_file_path;
 extern const char *task_time_stats_graveyard_map_file_path;
 

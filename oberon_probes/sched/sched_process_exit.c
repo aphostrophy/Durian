@@ -4,7 +4,19 @@
 #include <bpf/bpf_tracing.h>
 #include "../../oberon_maps.h"
 
-#define SEC(NAME) __attribute__((section(NAME), used))
+struct bpf_map_def SEC("maps") task_time_stats = {
+    .type = BPF_MAP_TYPE_HASH,
+    .key_size = sizeof(int),
+    .value_size = sizeof(struct task_time_stats_entry),
+    .max_entries = 32768,
+};
+
+struct bpf_map_def SEC("maps") time_stats_graveyard = {
+    .type = BPF_MAP_TYPE_HASH,
+    .key_size = sizeof(int),
+    .value_size = sizeof(struct task_time_stats_entry),
+    .max_entries = 32768,
+};
 
 struct sched_process_exit_args
 {

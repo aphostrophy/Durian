@@ -3,12 +3,12 @@
 #include <bpf/bpf.h>
 #include "trace_helpers.h"
 #include "oberon_maps.h"
+#include "oberon_common_user_bpf.h"
 #include "bpf_load.h"
-
-#define PID_MAX 32768
 
 int main(int argc, char **argv)
 {
+    struct bpf_object *bpf_obj;
     int err, fd, pinned, prog_fd;
 
     pinned = bpf_obj_get(task_time_stats_map_file_path);
@@ -49,33 +49,36 @@ int main(int argc, char **argv)
         }
     }
 
-    err = load_bpf_file("oberon_probes/sched/sched_switch.o");
-    if (err)
-    {
-        printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
-    }
-
-    err = load_bpf_file("oberon_probes/sched/sched_wakeup.o");
-    if (err)
-    {
-        printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
-    }
-
-    err = load_bpf_file("oberon_probes/sched/sched_process_wait.o");
-    if (err)
-    {
-        printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
-    }
-
-    err = load_bpf_file("oberon_probes/sched/sched_wakeup_new.o");
-    if (err)
+    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_wakeup_new.o", pin_basedir);
+    if (!bpf_obj)
     {
         printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
         return -1;
     }
 
-    err = load_bpf_file("oberon_probes/sched/sched_process_exit.o");
-    if (err)
+    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_switch.o", pin_basedir);
+    if (!bpf_obj)
+    {
+        printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
+        return -1;
+    }
+
+    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_wakeup.o", pin_basedir);
+    if (!bpf_obj)
+    {
+        printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
+        return -1;
+    }
+
+    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_process_wait.o", pin_basedir);
+    if (!bpf_obj)
+    {
+        printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
+        return -1;
+    }
+
+    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_process_exit.o", pin_basedir);
+    if (!bpf_obj)
     {
         printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
         return -1;
