@@ -33,17 +33,15 @@ int bpf_prog(struct sched_wakeup_new_args *ctx)
 {
     if (ctx->success)
     {
+        struct task_time_stats_entry e = {0};
         int key = ctx->pid;
         int prio = ctx->prio;
         int timestamp = bpf_ktime_get_ns();
-        struct task_time_stats_entry e = {0};
         e.pid = key;
         e.prio = prio;
         e.last_timestamp = timestamp;
-        bpf_map_update_elem(&task_time_stats, &key, &e, BPF_ANY);
 
-        char msg[] = "task %d enters run queue for the first time\n";
-        bpf_trace_printk(msg, sizeof(msg), ctx->pid);
+        bpf_map_update_elem(&task_time_stats, &key, &e, BPF_ANY);
     }
     return 0;
 }
