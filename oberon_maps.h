@@ -12,7 +12,7 @@ struct task_time_stats_entry
     int total_cpu_time;
     int total_wait_time;
     unsigned char current_state;
-    int last_timestamp;
+    unsigned long long last_timestamp;
 };
 
 #endif
