@@ -6,10 +6,18 @@
 #include "oberon_common_user_bpf.h"
 #include "bpf_load.h"
 
+static int handle_rb_event(void *ctx, void *data, size_t data_size)
+{
+    const struct sched_event_data_t *e = data;
+
+    printf("HELLO WORLD! %s\n", e->comm);
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
     struct bpf_object *bpf_obj;
-    int err, fd, pinned, prog_fd;
+    int err, fd, pinned;
 
     pinned = bpf_obj_get(task_time_stats_map_file_path);
     if (pinned < 0)
@@ -105,20 +113,32 @@ int main(int argc, char **argv)
     //     return -1;
     // }
 
+    /**
+     * Start of RB Testing, will migrate to either Go or Rust in the future
+     */
     struct ring_buffer *rb;
 
-    pinned = bpf_obj_get(sched_event_map_file_path);
+    fd = bpf_obj_get(sched_event_map_file_path);
 
-    printf("pinned: %d\n", pinned);
+    rb = ring_buffer__new(fd, handle_rb_event, NULL, NULL);
+    if (!rb)
+    {
+        printf("Failed to create ring buffer %s\n", strerror(errno));
+        return -1;
+    }
 
-    struct bpf_map_info map_info = {};
-    uint32_t map_info_len = sizeof(struct bpf_map_info);
-    bpf_obj_get_info_by_fd(pinned, &map_info, &map_info_len);
-
-    printf("map name: %s\n", map_info.name);
-
-    // rb = ring_buffer__new(bpf_map__fd())
-
+    while (true)
+    {
+        err = ring_buffer__poll(rb, 100);
+        if (err < 0)
+        {
+            printf("Error polling ring buffer: %d\n", err);
+            break;
+        }
+    }
+    /**
+     * End of RB Testing
+     */
     read_trace_pipe();
 
     return 0;
