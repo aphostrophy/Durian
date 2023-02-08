@@ -37,7 +37,9 @@ int bpf_prog(struct sched_wakeup_new_args *ctx)
         int key = ctx->pid;
         int prio = ctx->prio;
         int timestamp = bpf_ktime_get_ns();
+
         e.pid = key;
+        bpf_probe_read_kernel_str(&e.comm, sizeof(e.comm), ctx->comm);
         e.prio = prio;
         e.last_timestamp = timestamp;
 
