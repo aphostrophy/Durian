@@ -8,6 +8,7 @@ extern const char *task_time_stats_graveyard_map_file_path;
 struct task_time_stats_entry
 {
     int pid;
+    char comm[16];
     int prio;
     int total_cpu_time;
     int total_wait_time;
