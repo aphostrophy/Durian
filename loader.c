@@ -4,13 +4,15 @@
 #include "trace_helpers.h"
 #include "oberon_maps.h"
 #include "oberon_common_user_bpf.h"
+#include "oberon_common_user_debug.h"
 #include "bpf_load.h"
 
 static int handle_rb_event(void *ctx, void *data, size_t data_size)
 {
     const struct sched_event_data_t *e = data;
+    int x = e->prev_task_state;
 
-    printf("HELLO WORLD! %s\n", e->comm);
+    printf("[%d:%s] prev: %s next: %s\n", e->pid, e->comm, get_task_state_name(e->prev_task_state), get_task_state_name(e->next_task_state));
     return 0;
 }
 
@@ -68,8 +70,6 @@ int main(int argc, char **argv)
             return -1;
         }
 
-        printf("FD: %d\n", fd);
-
         pinned = bpf_obj_pin(fd, sched_event_map_file_path);
         if (pinned < 0)
         {
@@ -106,12 +106,12 @@ int main(int argc, char **argv)
     //     return -1;
     // }
 
-    // bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_process_exit.o", pin_basedir);
-    // if (!bpf_obj)
-    // {
-    //     printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
-    //     return -1;
-    // }
+    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_process_exit.o", pin_basedir);
+    if (!bpf_obj)
+    {
+        printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
+        return -1;
+    }
 
     /**
      * Start of RB Testing, will migrate to either Go or Rust in the future

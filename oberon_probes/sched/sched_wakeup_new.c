@@ -5,20 +5,6 @@
 #include "../../oberon_maps.h"
 #include "../../oberon_def.h"
 
-struct bpf_map_def SEC("maps") task_time_stats = {
-    .type = BPF_MAP_TYPE_RINGBUF,
-    .key_size = sizeof(int),
-    .value_size = sizeof(struct task_time_stats_entry),
-    .max_entries = 32768,
-};
-
-struct bpf_map_def SEC("maps") time_stats_graveyard = {
-    .type = BPF_MAP_TYPE_HASH,
-    .key_size = sizeof(int),
-    .value_size = sizeof(struct task_time_stats_entry),
-    .max_entries = 32768,
-};
-
 struct bpf_map_def SEC("maps") sched_events = {
     .type = BPF_MAP_TYPE_RINGBUF,
     .max_entries = SCHED_EVENT_RINGBUF_SIZE,
@@ -39,23 +25,15 @@ int bpf_prog(struct sched_wakeup_new_args *ctx)
 {
     if (ctx->success)
     {
-        struct task_time_stats_entry e = {0};
-        int key = ctx->pid;
-        int prio = ctx->prio;
         unsigned long long timestamp = bpf_ktime_get_ns();
 
-        e.pid = key;
-        bpf_probe_read_kernel_str(&e.comm, sizeof(e.comm), ctx->comm);
-        e.prio = prio;
-        e.last_timestamp = timestamp;
-
-        bpf_map_update_elem(&task_time_stats, &key, &e, BPF_ANY);
-
-        struct sched_event_data_t data;
-        data.pid = key;
-        bpf_probe_read_kernel_str(&data.comm, sizeof(data.comm), ctx->comm);
-        data.prio = prio;
+        struct sched_event_data_t data = {};
+        data.pid = ctx->pid;
+        data.prio = ctx->prio;
         data.ktime_ns = timestamp;
+        data.prev_task_state = __TASK_STOPPED;
+        data.next_task_state = TASK_RUNNING;
+        bpf_probe_read_kernel_str(&data.comm, sizeof(data.comm), ctx->comm);
 
         int ret;
 
