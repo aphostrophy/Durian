@@ -2,8 +2,13 @@
 #include <bpf/bpf_core_read.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
+#include "../../oberon_maps.h"
+#include "../../oberon_def.h"
 
-#define SEC(NAME) __attribute__((section(NAME), used))
+struct bpf_map_def SEC("maps") sched_events = {
+    .type = BPF_MAP_TYPE_RINGBUF,
+    .max_entries = SCHED_EVENT_RINGBUF_SIZE,
+};
 
 struct sched_switch_args
 {
