@@ -23,8 +23,25 @@ struct sched_wakeup_args
 SEC("tracepoint/sched/sched_wakeup")
 int bpf_prog(struct sched_wakeup_args *ctx)
 {
-    char msg[] = "task %d wakeup\n";
-    bpf_trace_printk(msg, sizeof(msg), ctx->pid);
+    unsigned long long timestamp = bpf_ktime_get_ns();
+
+    struct sched_event_data_t data = {};
+
+    data.pid = ctx->pid;
+    data.prio = ctx->prio;
+    data.ktime_ns = timestamp;
+    data.prev_task_state = TASK_WAITING;
+    data.next_task_state = TASK_RUNNING;
+    bpf_probe_read_kernel_str(&data.comm, sizeof(data.comm), ctx->comm);
+
+    int ret;
+
+    ret = bpf_ringbuf_output(&sched_events, &data, sizeof(struct sched_event_data_t), 0);
+    if (ret != 0)
+    {
+        char msg[] = "[sched_wakeup:data] ringbuf output err %d\n";
+        bpf_trace_printk(msg, sizeof(msg), ret);
+    }
     return 0;
 }
 
