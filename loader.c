@@ -2,10 +2,17 @@
 #include <errno.h>
 #include <bpf/bpf.h>
 #include "trace_helpers.h"
+#include <hiredis/hiredis.h>
 #include "oberon_maps.h"
 #include "oberon_common_user_bpf.h"
 #include "oberon_common_user_debug.h"
 #include "bpf_load.h"
+
+struct oberon_ctx
+{
+    struct redisContext *redis_conn;
+};
+typedef struct oberon_ctx oberon_ctx;
 
 static int handle_rb_event(void *ctx, void *data, size_t data_size)
 {
@@ -75,7 +82,20 @@ int main(int argc, char **argv)
     }
 
     /**
-     * Start of RB Testing, will migrate to either Go or Rust in the future
+     * Connect to redis for storing persistent task statistics
+     */
+    redisContext *redis_conn = redisConnect("localhost", 6379);
+    if (redis_conn == NULL || redis_conn->err)
+    {
+        printf("Error: %s\n", redis_conn == NULL ? "connection error" : redis_conn->errstr);
+        return -1;
+    }
+
+    oberon_ctx *ctx;
+    ctx->redis_conn = redis_conn;
+
+    /**
+     * Start of RB , will migrate to either Go or Rust in the future
      */
     struct ring_buffer *rb;
 
@@ -100,7 +120,8 @@ int main(int argc, char **argv)
     /**
      * End of RB Testing
      */
-    read_trace_pipe();
+
+    // read_trace_pipe();
 
     return 0;
 }

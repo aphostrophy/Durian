@@ -28,7 +28,9 @@
     "bpf_helper_defs.h": "c",
     "bitset": "c",
     "oberon_common_user_bpf.h": "c",
-    "oberon_common_user_debug.h": "c"
+    "oberon_common_user_debug.h": "c",
+    "random": "c",
+    "hiredis.h": "c"
   },
   "C_Cpp.errorSquiggles": "enabledIfIncludesResolve"
 }

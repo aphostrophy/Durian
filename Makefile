@@ -30,6 +30,7 @@ OBERONINCLUDE += oberon_maps.c
 
 LIBRARY_PATH = -L/usr/local/lib64
 BPFSO = -lbpf
+HIREDISSO = -lhiredis
 
 # Setting -DHAVE_ATTR_TEST=0 for the kernel containing below patch:
 # 06f84d1989b7 perf tools: Make usage of test_attr__* optional for perf-sys.h
@@ -74,7 +75,7 @@ bpfload: build_sched_wakeup_new_probe \
 		 build_sched_wakeup_probe \
 		 build_sched_process_wait_probe \
 		 build_sched_process_exit_probe
-	clang $(CFLAGS) -o $(EXECABLE) -lelf $(LOADINCLUDE) $(LIBRARY_PATH) $(BPFSO) \
+	clang $(CFLAGS) -o $(EXECABLE) -lelf $(LOADINCLUDE) $(LIBRARY_PATH) $(BPFSO) $(HIREDISSO) \
         $(BPFLOADER) $(BPFTEST) $(OBERONINCLUDE) loader.c -I KERNEL_SRC
 
 $(EXECABLE): bpfload
