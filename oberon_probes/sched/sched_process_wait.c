@@ -2,8 +2,13 @@
 #include <bpf/bpf_core_read.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
+#include "../../oberon_maps.h"
+#include "../../oberon_def.h"
 
-#define SEC(NAME) __attribute__((section(NAME), used))
+struct bpf_map_def SEC("maps") sched_events = {
+    .type = BPF_MAP_TYPE_RINGBUF,
+    .max_entries = SCHED_EVENT_RINGBUF_SIZE,
+};
 
 struct sched_process_wait_args
 {
@@ -16,8 +21,26 @@ struct sched_process_wait_args
 SEC("tracepoint/sched/sched_process_wait")
 int bpf_prog(struct sched_process_wait_args *ctx)
 {
-    char msg[] = "task %d enters wait queue\n";
-    bpf_trace_printk(msg, sizeof(msg), ctx->pid);
+    unsigned long long timestamp = bpf_ktime_get_ns();
+
+    struct sched_event_data_t data = {};
+
+    data.pid = ctx->pid;
+    data.prio = ctx->prio;
+    data.ktime_ns = timestamp;
+    data.prev_task_state = TASK_RUNNING;
+    data.next_task_state = TASK_WAITING;
+    bpf_probe_read_kernel_str(&data.comm, sizeof(data.comm), ctx->comm);
+
+    int ret;
+
+    ret = bpf_ringbuf_output(&sched_events, &data, sizeof(struct sched_event_data_t), 0);
+    if (ret != 0)
+    {
+        char msg[] = "[sched_process_wait:data] ringbuf output err %d\n";
+        bpf_trace_printk(msg, sizeof(msg), ret);
+    }
+
     return 0;
 }
 

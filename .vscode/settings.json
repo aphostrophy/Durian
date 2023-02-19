@@ -27,7 +27,8 @@
     "bpf_core_read.h": "c",
     "bpf_helper_defs.h": "c",
     "bitset": "c",
-    "oberon_common_user_bpf.h": "c"
+    "oberon_common_user_bpf.h": "c",
+    "oberon_common_user_debug.h": "c"
   },
   "C_Cpp.errorSquiggles": "enabledIfIncludesResolve"
 }
