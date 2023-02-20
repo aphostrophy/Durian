@@ -1,17 +1,54 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
 #include <bpf/bpf.h>
 #include "trace_helpers.h"
+#include <hiredis/hiredis.h>
 #include "oberon_maps.h"
 #include "oberon_common_user_bpf.h"
 #include "oberon_common_user_debug.h"
 #include "bpf_load.h"
 
+struct oberon_ctx
+{
+    struct redisContext *redis_context;
+    int redis_cmd_cnt;
+    int success;
+};
+typedef struct oberon_ctx oberon_ctx;
+
 static int handle_rb_event(void *ctx, void *data, size_t data_size)
 {
+    struct oberon_ctx *ctx_data = (struct oberon_ctx *)ctx;
     const struct sched_event_data_t *e = data;
 
-    printf("[%d:%s] prev: %s next: %s\n", e->pid, e->comm, get_task_state_name(e->prev_task_state), get_task_state_name(e->next_task_state));
+    if (e->prev_task_state == __TASK_STOPPED && e->next_task_state == TASK_RUNNING)
+    {
+        /* Task starts */
+    }
+    else if (e->prev_task_state == TASK_RUNNING && e->next_task_state == __TASK_STOPPED)
+    {
+        /* Task terminates */
+    }
+    else if (e->prev_task_state == TASK_RUNNING && e->next_task_state == TASK_RUNNING)
+    {
+        /* Task switches */
+        redisAppendCommand(ctx_data->redis_context, "INCR mykey");
+        ctx_data->redis_cmd_cnt += 1;
+    }
+    else if (e->prev_task_state == TASK_WAITING && e->next_task_state == TASK_RUNNING)
+    {
+        /* Task exits a wait queue */
+    }
+    else if (e->prev_task_state == TASK_RUNNING && e->next_task_state == TASK_WAITING)
+    {
+        /* Task enters a wait queue */
+    }
+    else
+    {
+        printf("[%d:%s] task state change monitoring for prev: %s next: %s is not supported\n", e->pid, e->comm, get_task_state_name(e->prev_task_state), get_task_state_name(e->next_task_state));
+    }
     return 0;
 }
 
@@ -75,13 +112,28 @@ int main(int argc, char **argv)
     }
 
     /**
-     * Start of RB Testing, will migrate to either Go or Rust in the future
+     * Connect to redis for storing persistent task statistics
+     */
+    redisContext *redis_context = redisConnect("localhost", 6379);
+    if (redis_context == NULL || redis_context->err)
+    {
+        printf("Error: %s\n", redis_context == NULL ? "connection error" : redis_context->errstr);
+        return -1;
+    }
+
+    oberon_ctx *ctx = malloc(sizeof(oberon_ctx));
+    ctx->redis_context = redis_context;
+    ctx->success = 1;
+    ctx->redis_cmd_cnt = 0;
+
+    /**
+     * Start of RB , will migrate to either Go or Rust in the future
      */
     struct ring_buffer *rb;
 
     fd = bpf_obj_get(sched_event_map_file_path);
 
-    rb = ring_buffer__new(fd, handle_rb_event, NULL, NULL);
+    rb = ring_buffer__new(fd, handle_rb_event, ctx, NULL);
     if (!rb)
     {
         printf("Failed to create ring buffer %s\n", strerror(errno));
@@ -90,17 +142,37 @@ int main(int argc, char **argv)
 
     while (true)
     {
-        err = ring_buffer__poll(rb, 100);
+        err = ring_buffer__consume(rb);
         if (err < 0)
         {
             printf("Error polling ring buffer: %d\n", err);
             break;
         }
+        /**
+         * Submit single batch statistics to redis and read the replies
+         */
+        redisReply *reply;
+        for (int i = 0; i < ctx->redis_cmd_cnt; i++)
+        {
+            int status = redisGetReply(redis_context, (void **)&reply);
+            if (status != REDIS_OK)
+            {
+                // Handle error
+            }
+            if (reply != NULL)
+            {
+                // Process reply
+                // ...
+            }
+            freeReplyObject(reply);
+        }
+        ctx->redis_cmd_cnt = 0;
     }
     /**
      * End of RB Testing
      */
-    read_trace_pipe();
+
+    // read_trace_pipe();
 
     return 0;
 }
