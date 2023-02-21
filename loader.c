@@ -8,15 +8,8 @@
 #include "oberon_maps.h"
 #include "oberon_common_user_bpf.h"
 #include "oberon_common_user_debug.h"
+#include "oberon_repository.h"
 #include "bpf_load.h"
-
-struct oberon_ctx
-{
-    struct redisContext *redis_context;
-    int redis_cmd_cnt;
-    int success;
-};
-typedef struct oberon_ctx oberon_ctx;
 
 static int handle_rb_event(void *ctx, void *data, size_t data_size)
 {
@@ -34,8 +27,7 @@ static int handle_rb_event(void *ctx, void *data, size_t data_size)
     else if (e->prev_task_state == TASK_RUNNING && e->next_task_state == TASK_RUNNING)
     {
         /* Task switches */
-        redisAppendCommand(ctx_data->redis_context, "INCR mykey");
-        ctx_data->redis_cmd_cnt += 1;
+        pipeline_push_command(ctx, "INCR mykey");
     }
     else if (e->prev_task_state == TASK_WAITING && e->next_task_state == TASK_RUNNING)
     {

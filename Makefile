@@ -26,7 +26,9 @@ LOADINCLUDE += -I$(KERNEL_SRC)/tools/testing/selftests/bpf
 
 OBERONINCLUDE += oberon_common_user_bpf.c
 OBERONINCLUDE += oberon_common_user_debug.c
+OBERONINCLUDE += oberon_common_repository.c
 OBERONINCLUDE += oberon_maps.c
+OBERONINCLUDE += oberon_repository.c
 
 LIBRARY_PATH = -L/usr/local/lib64
 BPFSO = -lbpf
