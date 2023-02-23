@@ -19,6 +19,7 @@ static int handle_rb_event(void *ctx, void *data, size_t data_size)
     if (e->prev_task_state == __TASK_STOPPED && e->next_task_state == TASK_RUNNING)
     {
         /* Task starts */
+        repository_track_task(ctx_data, e->pid, e->comm, e->prio);
     }
     else if (e->prev_task_state == TASK_RUNNING && e->next_task_state == __TASK_STOPPED)
     {
@@ -27,7 +28,7 @@ static int handle_rb_event(void *ctx, void *data, size_t data_size)
     else if (e->prev_task_state == TASK_RUNNING && e->next_task_state == TASK_RUNNING)
     {
         /* Task switches */
-        pipeline_push_command(ctx, "INCR mykey");
+        // pipeline_push_command(ctx_data, "INCR mykey");
     }
     else if (e->prev_task_state == TASK_WAITING && e->next_task_state == TASK_RUNNING)
     {
@@ -90,6 +91,13 @@ int main(int argc, char **argv)
     }
 
     bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_process_wait.o", pin_basedir);
+    if (!bpf_obj)
+    {
+        printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
+        return -1;
+    }
+
+    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_wait_task.o", pin_basedir);
     if (!bpf_obj)
     {
         printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
