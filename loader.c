@@ -19,11 +19,12 @@ static int handle_rb_event(void *ctx, void *data, size_t data_size)
     if (e->prev_task_state == __TASK_STOPPED && e->next_task_state == TASK_RUNNING)
     {
         /* Task starts */
-        repository_track_task(ctx_data, e->pid, e->comm, e->prio);
+        repository_track_task(ctx_data, e->pid, e->comm, e->prio, e->next_task_state, e->ktime_ns);
     }
     else if (e->prev_task_state == TASK_RUNNING && e->next_task_state == __TASK_STOPPED)
     {
         /* Task terminates */
+        repository_untrack_task(ctx_data, e->pid, e->next_task_state, e->ktime_ns);
     }
     else if (e->prev_task_state == TASK_RUNNING && e->next_task_state == TASK_RUNNING)
     {
