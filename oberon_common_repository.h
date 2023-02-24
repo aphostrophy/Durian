@@ -24,4 +24,6 @@ typedef struct oberon_ctx oberon_ctx;
  */
 void pipeline_push_command(oberon_ctx *ctx, const char *format, ...);
 
+void pipeline_push_command_argv(oberon_ctx *ctx, int argc, const char **argv, const size_t *argvlen);
+
 #endif

@@ -19,20 +19,22 @@ static int handle_rb_event(void *ctx, void *data, size_t data_size)
     if (e->prev_task_state == __TASK_STOPPED && e->next_task_state == TASK_RUNNING_RQ)
     {
         /* Task starts */
-        repository_track_task(ctx_data, e->pid, e->comm, e->prio, e->next_task_state, e->ktime_ns);
+        repository_track_task(ctx_data, e->pid, e->comm, e->prio, e->ktime_ns);
     }
     else if (e->prev_task_state == TASK_RUNNING_CPU && e->next_task_state == __TASK_STOPPED)
     {
         /* Task terminates */
-        repository_untrack_task(ctx_data, e->pid, e->next_task_state, e->ktime_ns);
+        repository_untrack_task(ctx_data, e->pid, e->ktime_ns);
     }
     else if (e->prev_task_state == TASK_RUNNING_CPU && e->next_task_state == TASK_RUNNING_RQ)
     {
         /* Task switches */
-        // pipeline_push_command(ctx_data, "INCR mykey");
+        repository_update_stats_task_exits_cpu(ctx_data, e->pid, e->ktime_ns);
     }
     else if (e->prev_task_state == TASK_RUNNING_RQ && e->next_task_state == TASK_RUNNING_CPU)
     {
+        /* Task switches */
+        repository_update_stats_task_enters_cpu(ctx_data, e->pid, e->ktime_ns);
     }
     else if (e->prev_task_state == TASK_WAITING && e->next_task_state == TASK_RUNNING_RQ)
     {
@@ -130,6 +132,27 @@ int main(int argc, char **argv)
     ctx->success = 1;
     ctx->redis_cmd_cnt = 0;
 
+    /* Preload lua scripts */
+    redisReply *reply = redisCommand(ctx->redis_context, "SCRIPT LOAD %s", lua_script_update_stats_task_exits_cpu);
+    if (reply == NULL || reply->type == REDIS_REPLY_ERROR)
+    {
+        fprintf(stderr, "Failed to load Lua script: %s\n", reply ? reply->str : "unknown error");
+        return -1;
+    }
+    strcpy(lua_script_update_stats_task_exits_cpu_sha1_hash, reply->str);
+    printf("Successfully preloaded script %s\n", lua_script_update_stats_task_exits_cpu_sha1_hash);
+    freeReplyObject(reply);
+
+    reply = redisCommand(ctx->redis_context, "SCRIPT LOAD %s", lua_script_update_stats_task_enters_cpu);
+    if (reply == NULL || reply->type == REDIS_REPLY_ERROR)
+    {
+        fprintf(stderr, "Failed to load Lua script: %s\n", reply ? reply->str : "unknown error");
+        return -1;
+    }
+    strcpy(lua_script_update_stats_task_enters_cpu_sha1_hash, reply->str);
+    printf("Successfully preloaded script %s\n", lua_script_update_stats_task_enters_cpu_sha1_hash);
+    freeReplyObject(reply);
+
     /**
      * Start of RB , will migrate to either Go or Rust in the future
      */
@@ -162,11 +185,16 @@ int main(int argc, char **argv)
             if (status != REDIS_OK)
             {
                 // Handle error
+                fprintf(stderr, "Error while reading redis reply: %d %s\n", status, ctx->redis_context->errstr);
             }
             if (reply != NULL)
             {
                 // Process reply
                 // ...
+                if (reply->type == REDIS_REPLY_ERROR)
+                {
+                    printf("%s\n", reply->str);
+                }
             }
             freeReplyObject(reply);
         }
