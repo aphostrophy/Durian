@@ -28,7 +28,7 @@ int bpf_prog(struct sched_wait_task_args *ctx)
     data.pid = ctx->pid;
     data.prio = ctx->prio;
     data.ktime_ns = timestamp;
-    data.prev_task_state = TASK_RUNNING;
+    data.prev_task_state = TASK_RUNNING_CPU;
     data.next_task_state = TASK_WAITING;
     bpf_probe_read_kernel_str(&data.comm, sizeof(data.comm), ctx->comm);
 

@@ -32,7 +32,7 @@ int bpf_prog(struct sched_wakeup_new_args *ctx)
         data.prio = ctx->prio;
         data.ktime_ns = timestamp;
         data.prev_task_state = __TASK_STOPPED;
-        data.next_task_state = TASK_RUNNING;
+        data.next_task_state = TASK_RUNNING_RQ;
         bpf_probe_read_kernel_str(&data.comm, sizeof(data.comm), ctx->comm);
 
         int ret;

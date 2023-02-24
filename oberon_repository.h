@@ -20,7 +20,7 @@
  * It will be set to its initial values.
  * total_cpu_time : 0
  * total_wait_time : 0
- * last_seen_state : TASK_RUNNING
+ * last_seen_state : TASK_RUNNING_RQ
  * last_ktime_ns : kernel time in nanoseconds in when the sched event happens
  *
  * @note This function does not execute the Redis command. To execute the pipeline, call `redisGetReply` repeatedly after pushing all desired commands.
@@ -39,5 +39,15 @@ void repository_track_task(oberon_ctx *ctx, int pid, const char comm[16], int pr
  * @note This function does not execute the Redis command. To execute the pipeline, call `redisGetReply` repeatedly after pushing all desired commands.
  */
 void repository_untrack_task(oberon_ctx *ctx, int pid, int task_state, unsigned long long ktime_ns);
+
+/**
+ *
+ */
+void repository_update_stats_task_enters_cpu(oberon_ctx *ctx, int pid, int prev_task_state, int next_task_state, unsigned long long ktime_ns);
+
+/**
+ *
+ */
+void repository_update_stats_task_exits_cpu(oberon_ctx *ctx, int pid, int prev_task_state, int next_task_state, unsigned long long ktime_ns);
 
 #endif

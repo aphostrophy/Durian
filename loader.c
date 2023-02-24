@@ -16,26 +16,29 @@ static int handle_rb_event(void *ctx, void *data, size_t data_size)
     struct oberon_ctx *ctx_data = (struct oberon_ctx *)ctx;
     const struct sched_event_data_t *e = data;
 
-    if (e->prev_task_state == __TASK_STOPPED && e->next_task_state == TASK_RUNNING)
+    if (e->prev_task_state == __TASK_STOPPED && e->next_task_state == TASK_RUNNING_RQ)
     {
         /* Task starts */
         repository_track_task(ctx_data, e->pid, e->comm, e->prio, e->next_task_state, e->ktime_ns);
     }
-    else if (e->prev_task_state == TASK_RUNNING && e->next_task_state == __TASK_STOPPED)
+    else if (e->prev_task_state == TASK_RUNNING_CPU && e->next_task_state == __TASK_STOPPED)
     {
         /* Task terminates */
         repository_untrack_task(ctx_data, e->pid, e->next_task_state, e->ktime_ns);
     }
-    else if (e->prev_task_state == TASK_RUNNING && e->next_task_state == TASK_RUNNING)
+    else if (e->prev_task_state == TASK_RUNNING_CPU && e->next_task_state == TASK_RUNNING_RQ)
     {
         /* Task switches */
         // pipeline_push_command(ctx_data, "INCR mykey");
     }
-    else if (e->prev_task_state == TASK_WAITING && e->next_task_state == TASK_RUNNING)
+    else if (e->prev_task_state == TASK_RUNNING_RQ && e->next_task_state == TASK_RUNNING_CPU)
+    {
+    }
+    else if (e->prev_task_state == TASK_WAITING && e->next_task_state == TASK_RUNNING_RQ)
     {
         /* Task exits a wait queue */
     }
-    else if (e->prev_task_state == TASK_RUNNING && e->next_task_state == TASK_WAITING)
+    else if (e->prev_task_state == TASK_RUNNING_CPU && e->next_task_state == TASK_WAITING)
     {
         /* Task enters a wait queue */
     }

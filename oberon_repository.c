@@ -25,3 +25,11 @@ void repository_untrack_task(oberon_ctx *ctx, int pid, int task_state, unsigned 
                           pid, task_state,
                           pid, ktime_ns);
 }
+
+void repository_update_stats_task_enters_cpu(oberon_ctx *ctx, int pid, int prev_task_state, int next_task_state, unsigned long long ktime_ns)
+{
+}
+
+void repository_update_stats_task_exits_cpu(oberon_ctx *ctx, int pid, int prev_task_state, int next_task_state, unsigned long long ktime_ns)
+{
+}

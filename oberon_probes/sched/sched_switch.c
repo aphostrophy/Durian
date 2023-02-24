@@ -33,9 +33,9 @@ int bpf_prog(struct sched_switch_args *ctx)
     prev_data.pid = ctx->prev_pid;
     prev_data.prio = ctx->prev_prio;
     prev_data.ktime_ns = timestamp;
-    // task goes back to the run queue so the state doesn't change
-    prev_data.prev_task_state = TASK_RUNNING;
-    prev_data.next_task_state = TASK_RUNNING;
+    // task goes back to the run queue
+    prev_data.prev_task_state = TASK_RUNNING_CPU;
+    prev_data.next_task_state = TASK_RUNNING_RQ;
     bpf_probe_read_kernel_str(&prev_data.comm, sizeof(prev_data.comm), ctx->prev_comm);
 
     // next_data for tracing task that is entering the CPU
@@ -44,9 +44,9 @@ int bpf_prog(struct sched_switch_args *ctx)
     next_data.pid = ctx->next_pid;
     next_data.prio = ctx->next_prio;
     next_data.ktime_ns = timestamp;
-    // task goes back to the run queue so the state doesn't change
-    next_data.prev_task_state = TASK_RUNNING;
-    next_data.next_task_state = TASK_RUNNING;
+    // task goes back to the cpu
+    next_data.prev_task_state = TASK_RUNNING_RQ;
+    next_data.next_task_state = TASK_RUNNING_CPU;
     bpf_probe_read_kernel_str(&next_data.comm, sizeof(next_data.comm), ctx->next_comm);
 
     int ret;
