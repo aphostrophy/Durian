@@ -31,7 +31,9 @@
     "oberon_common_user_debug.h": "c",
     "random": "c",
     "hiredis.h": "c",
-    "oberon_def.h": "c"
+    "oberon_def.h": "c",
+    "oberon_sched_stats_transactions.h": "c",
+    "cstring": "c"
   },
   "C_Cpp.errorSquiggles": "enabledIfIncludesResolve"
 }

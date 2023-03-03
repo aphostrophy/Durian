@@ -17,3 +17,17 @@ void pipeline_push_command_argv(oberon_ctx *ctx, int argc, const char **argv, co
     redisAppendCommandArgv(ctx->redis_context, argc, argv, argvlen);
     ctx->redis_cmd_cnt += 1;
 }
+
+int load_transaction_script(oberon_ctx *ctx, const char *script, char script_hash[41])
+{
+    redisReply *reply = redisCommand(ctx->redis_context, "SCRIPT LOAD %s", script);
+    if (reply == NULL || reply->type == REDIS_REPLY_ERROR)
+    {
+        fprintf(stderr, "Failed to load Lua script: %s\n", reply ? reply->str : "unknown error");
+        return -1;
+    }
+    strcpy(script_hash, reply->str);
+    printf("Successfully preloaded script %s\n", script_hash);
+    freeReplyObject(reply);
+    return 0;
+}

@@ -30,6 +30,7 @@ OBERONINCLUDE += oberon_common_user_debug.c
 OBERONINCLUDE += oberon_common_repository.c
 OBERONINCLUDE += oberon_maps.c
 OBERONINCLUDE += oberon_repository.c
+OBERONINCLUDE += oberon_sched_stats_transactions.c
 
 LIBRARY_PATH = -L/usr/local/lib64
 BPFSO = -lbpf

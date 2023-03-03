@@ -3,6 +3,7 @@
 
 #include <hiredis/hiredis.h>
 #include <stdarg.h>
+#include <string.h>
 
 struct oberon_ctx
 {
@@ -25,5 +26,7 @@ typedef struct oberon_ctx oberon_ctx;
 void pipeline_push_command(oberon_ctx *ctx, const char *format, ...);
 
 void pipeline_push_command_argv(oberon_ctx *ctx, int argc, const char **argv, const size_t *argvlen);
+
+int load_transaction_script(oberon_ctx *ctx, const char *script, char script_hash[41]);
 
 #endif

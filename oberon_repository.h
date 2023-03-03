@@ -4,6 +4,7 @@
 #include <hiredis/hiredis.h>
 #include "oberon_def.h"
 #include "oberon_common_repository.h"
+#include "oberon_sched_stats_transactions.h"
 
 /**
  * Starts tracking a newly born task lifecycle to the repository
@@ -60,14 +61,5 @@ void repository_update_stats_task_wait_starts(oberon_ctx *ctx, int pid, unsigned
  *
  */
 void repository_update_stats_task_wait_ends(oberon_ctx *ctx, int pid, unsigned long long ktime_ns);
-
-/**
- * Lua scripts
- */
-extern const char *lua_script_update_stats_task_enters_cpu;
-extern const char *lua_script_update_stats_task_exits_cpu;
-
-extern char lua_script_update_stats_task_exits_cpu_sha1_hash[41]; // 40 characters for the hash plus one null terminator
-extern char lua_script_update_stats_task_enters_cpu_sha1_hash[41];
 
 #endif

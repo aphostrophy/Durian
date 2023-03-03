@@ -133,25 +133,16 @@ int main(int argc, char **argv)
     ctx->redis_cmd_cnt = 0;
 
     /* Preload lua scripts */
-    redisReply *reply = redisCommand(ctx->redis_context, "SCRIPT LOAD %s", lua_script_update_stats_task_exits_cpu);
-    if (reply == NULL || reply->type == REDIS_REPLY_ERROR)
+    err = load_transaction_script(ctx, lua_script_update_stats_task_exits_cpu, lua_script_update_stats_task_exits_cpu_sha1_hash);
+    if (err != 0)
     {
-        fprintf(stderr, "Failed to load Lua script: %s\n", reply ? reply->str : "unknown error");
         return -1;
     }
-    strcpy(lua_script_update_stats_task_exits_cpu_sha1_hash, reply->str);
-    printf("Successfully preloaded script %s\n", lua_script_update_stats_task_exits_cpu_sha1_hash);
-    freeReplyObject(reply);
-
-    reply = redisCommand(ctx->redis_context, "SCRIPT LOAD %s", lua_script_update_stats_task_enters_cpu);
-    if (reply == NULL || reply->type == REDIS_REPLY_ERROR)
+    err = load_transaction_script(ctx, lua_script_update_stats_task_enters_cpu, lua_script_update_stats_task_enters_cpu_sha1_hash);
+    if (err != 0)
     {
-        fprintf(stderr, "Failed to load Lua script: %s\n", reply ? reply->str : "unknown error");
         return -1;
     }
-    strcpy(lua_script_update_stats_task_enters_cpu_sha1_hash, reply->str);
-    printf("Successfully preloaded script %s\n", lua_script_update_stats_task_enters_cpu_sha1_hash);
-    freeReplyObject(reply);
 
     /**
      * Start of RB , will migrate to either Go or Rust in the future
