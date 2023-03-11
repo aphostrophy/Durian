@@ -20,8 +20,8 @@
  * The repository will track the task's total CPU time, total wait time, last seen task state,
  * and kernel time which indicates the time the task changes state.
  * It will be set to its initial values.
- * total_cpu_time : 0
- * total_wait_time : 0
+ * total_cpu_time_ns : 0
+ * total_wait_time_ns : 0
  * last_seen_state : TASK_RUNNING_RQ
  * last_ktime_ns : kernel time in nanoseconds in when the sched event happens
  *

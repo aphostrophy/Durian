@@ -5,8 +5,8 @@ void repository_track_task(oberon_ctx *ctx, int pid, const char comm[16], int pr
     pipeline_push_command(ctx,
                           "MSET %d:comm %s "
                           "%d:prio %d "
-                          "%d:total_cpu_time %d "
-                          "%d:total_wait_time %d "
+                          "%d:total_cpu_time_ns %d "
+                          "%d:total_wait_time_ns %d "
                           "%d:last_seen_state %d "
                           "%d:last_ktime_ns %llu",
                           pid, comm,
@@ -33,8 +33,8 @@ void repository_update_stats_task_enters_cpu(oberon_ctx *ctx, int pid, const cha
                           "%d "
                           "%d:last_ktime_ns "
                           "%d:last_seen_state "
-                          "%d:total_cpu_time "
-                          "%d:total_wait_time "
+                          "%d:total_cpu_time_ns "
+                          "%d:total_wait_time_ns "
                           "%d:comm "
                           "%d:prio "
                           "%llu "
@@ -55,7 +55,7 @@ void repository_update_stats_task_exits_cpu(oberon_ctx *ctx, int pid, unsigned l
                           "%d "
                           "%d:last_ktime_ns "
                           "%d:last_seen_state "
-                          "%d:total_cpu_time "
+                          "%d:total_cpu_time_ns "
                           "%llu",
                           lua_script_update_stats_task_exits_cpu_sha1_hash,
                           3,

@@ -10,8 +10,8 @@ char lua_script_update_stats_task_exits_cpu_sha1_hash[41] = "";
  * @param KEYS[2] pid:last_seen_state
  *
  * @note extra KEYS used for task tracking mechanism
- * @param KEYS[3] pid:total_cpu_time
- * @param KEYS[4] pid:total_wait_time
+ * @param KEYS[3] pid:total_cpu_time_ns
+ * @param KEYS[4] pid:total_wait_time_ns
  * @param KEYS[5] pid:comm
  * @param KEYS[6] pid:prio
  *
@@ -43,9 +43,6 @@ const char *lua_script_update_stats_task_enters_cpu =
     "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
     "\n"
     "if (last_seen_state == 0x0000 and ktime_ns >= last_ktime_ns) then -- TASK_RUNNING_RQ\n"
-    "   if KEYS[1] == '0:last_ktime_ns' then\n"
-    "       redis.log(redis.LOG_NOTICE, 'zeroo')\n"
-    "   end\n"
     "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"
     "   redis.call('SET', KEYS[2], 0x0001) -- TASK_RUNNING_CPU\n"
     "end\n";
