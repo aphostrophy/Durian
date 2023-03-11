@@ -133,6 +133,16 @@ int main(int argc, char **argv)
     ctx->redis_cmd_cnt = 0;
 
     /* Preload lua scripts */
+    err = load_transaction_script(ctx, lua_script_track_task, lua_script_track_task_sha1_hash);
+    if (err != 0)
+    {
+        return -1;
+    }
+    err = load_transaction_script(ctx, lua_script_untrack_task, lua_script_untrack_task_sha1_hash);
+    if (err != 0)
+    {
+        return -1;
+    }
     err = load_transaction_script(ctx, lua_script_update_stats_task_exits_cpu, lua_script_update_stats_task_exits_cpu_sha1_hash);
     if (err != 0)
     {
