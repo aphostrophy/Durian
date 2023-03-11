@@ -34,7 +34,7 @@ static int handle_rb_event(void *ctx, void *data, size_t data_size)
     else if (e->prev_task_state == TASK_RUNNING_RQ && e->next_task_state == TASK_RUNNING_CPU)
     {
         /* Task switches */
-        repository_update_stats_task_enters_cpu(ctx_data, e->pid, e->ktime_ns);
+        repository_update_stats_task_enters_cpu(ctx_data, e->pid, e->comm, e->prio, e->ktime_ns);
     }
     else if (e->prev_task_state == TASK_WAITING && e->next_task_state == TASK_RUNNING_RQ)
     {

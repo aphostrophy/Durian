@@ -45,7 +45,7 @@ void repository_untrack_task(oberon_ctx *ctx, int pid, unsigned long long ktime_
 /**
  *
  */
-void repository_update_stats_task_enters_cpu(oberon_ctx *ctx, int pid, unsigned long long ktime_ns);
+void repository_update_stats_task_enters_cpu(oberon_ctx *ctx, int pid, const char comm[16], int prio, unsigned long long ktime_ns);
 
 /**
  *
