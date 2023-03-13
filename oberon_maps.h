@@ -12,6 +12,7 @@ struct sched_event_data_t
     int prev_task_state;
     int next_task_state;
     unsigned long long ktime_ns;
+    int delta; // used to pass delay field contained in some sched event tracepoints
 };
 
 #endif

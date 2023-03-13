@@ -8,6 +8,7 @@ SCHED_SWITCH_PROBE_BPF = oberon_probes/sched/sched_switch
 SCHED_PROCESS_WAIT_PROBE_BPF = oberon_probes/sched/sched_process_wait
 SCHED_WAIT_TASK_PROBE_BPF = oberon_probes/sched/sched_wait_task
 SCHED_PROCESS_EXIT_PROBE_BPF = oberon_probes/sched/sched_process_exit
+SCHED_STAT_SLEEP_PROBE_BPF = oberon_probes/sched/sched_stat_sleep
 
 OBERON_MAPS = oberon_maps
 
@@ -77,12 +78,14 @@ build_sched_wait_task_probe: ${SCHED_WAIT_TASK_PROBE_BPF.c} ${OBERON_MAPS.c} ${B
 build_sched_process_exit_probe: ${SCHED_PROCESS_EXIT_PROBE_BPF.c} ${OBERON_MAPS.c} ${BPFLOADER}
 	$(CLANG) -O2 -target bpf -c $(SCHED_PROCESS_EXIT_PROBE_BPF:=.c) $(OBERON_MAPS.c) $(CCINCLUDE) -o ${SCHED_PROCESS_EXIT_PROBE_BPF:=.o}
 
+build_sched_stat_sleep_probe: ${SCHED_STAT_SLEEP_PROBE_BPF.c} ${OBERON_MAPS.c} ${BPFLOADER}
+	$(CLANG) -O2 -target bpf -c $(SCHED_STAT_SLEEP_PROBE_BPF:=.c) $(OBERON_MAPS.c) $(CCINCLUDE) -o ${SCHED_STAT_SLEEP_PROBE_BPF:=.o}
+
 bpfload: build_sched_wakeup_new_probe \
 		 build_sched_switch_probe \
 		 build_sched_wakeup_probe \
-		 build_sched_process_wait_probe \
-		 build_sched_wait_task_probe \
-		 build_sched_process_exit_probe
+		 build_sched_process_exit_probe \
+		 build_sched_stat_sleep_probe
 	clang $(CFLAGS) -o $(EXECABLE) -lelf $(LOADINCLUDE) $(LIBRARY_PATH) $(BPFSO) $(HIREDISSO) \
         $(BPFLOADER) $(BPFTEST) $(OBERONINCLUDE) loader.c -I KERNEL_SRC
 

@@ -4,9 +4,11 @@ char lua_script_track_task_sha1_hash[41] = "";
 char lua_script_untrack_task_sha1_hash[41] = "";
 char lua_script_update_stats_task_enters_cpu_sha1_hash[41] = "";
 char lua_script_update_stats_task_exits_cpu_sha1_hash[41] = "";
+char lua_script_update_stats_task_wait_starts_sha1_hash[41] = "";
+char lua_script_update_stats_task_wait_ends_sha1_hash[41] = "";
 
 /**
- * Lua transaction script for starting initial task tracking mechanism
+ * @brief Lua transaction script for starting initial task tracking mechanism
  *
  * Initialize task statistics with initial values
  * Add task pid to RUNNING_PID_SET
@@ -51,7 +53,7 @@ const char *lua_script_track_task =
     "redis.call('SADD', KEYS[7], pid)\n";
 
 /**
- * Lua transaction script for untracking a task
+ * @brief Lua transaction script for untracking a task
  *
  * Remove task pid from RUNNING_PID_SET
  * Add automatic deletion timeout for all keys that are related to the task pid
@@ -86,8 +88,11 @@ const char *lua_script_untrack_task =
     "redis.call('SREM', KEYS[7], pid)\n";
 
 /**
- * Lua transaction script that will modify the time statistics for a task
- * Will do the initial task tracking mechanism if task is not already tracked
+ * @brief Lua transaction script that will modify the time statistics for a task
+ * on CPU state change.
+ *
+ * Will do the initial task tracking mechanism if task is not already tracked.
+ *
  * @param KEYS[1] pid:last_ktime_ns
  * @param KEYS[2] pid:last_seen_state
  *
@@ -143,14 +148,69 @@ const char *lua_script_update_stats_task_enters_cpu =
     "   redis.call('SET', KEYS[2], 0x0001) -- TASK_RUNNING_CPU\n"
     "end\n";
 
+/**
+ *
+ */
 const char *lua_script_update_stats_task_exits_cpu =
     "local ktime_ns = ARGV[1]\n"
     "local last_ktime_ns = redis.call('GET', KEYS[1])\n"
     "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
     "\n"
-    "if last_seen_state == 0x0001 then -- TASK_RUNNING_CPU\n"
+    "if (last_seen_state == 0x0001 and ktime_ns >= last_ktime_ns) then -- TASK_RUNNING_CPU\n"
     "   local delta = tonumber(ktime_ns) - tonumber(last_ktime_ns)\n"
     "   redis.call('INCRBY', KEYS[3], delta)\n"
     "   redis.call('SET', KEYS[2], 0x0000) -- TASK_RUNNING_RQ\n"
     "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"
+    "end\n";
+
+/**
+ * @brief Lua transaction script for modifying the time statistics of a task
+ * on I/O state change (entering a wait queue).
+ *
+ * When a task enters any wait queue from TASK_RUNNING_CPU state, increment
+ * total_cpu_time_ns by delta, update task state to TASK_WAITING, modify last_ktime_ns.
+ *
+ * @param KEYS[1] pid:last_ktime_ns
+ * @param KEYS[2] pid:last_seen_state
+ * @param KEYS[3] pid:total_cpu_time_ns
+ *
+ * @param ARGV[1] ktime_ns
+ *
+ * @note UNUSED
+ */
+const char *lua_script_update_stats_task_wait_starts =
+    "local ktime_ns = ARGV[1]\n"
+    "local last_ktime_ns = redis.call('GET', KEYS[1])\n"
+    "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
+    "\n"
+    "if (last_seen_state == 0x0001 and ktime_ns >= last_ktime_ns) then --TASK_RUNNING_CPU\n"
+    "   local delta = tonumber(ktime_ns) - tonumber(last_ktime_ns)\n"
+    "   redis.call('INCRBY', KEYS[3], delta)\n"
+    "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"
+    "   redis.call('SET', KEYS[2], 0x0002) -- TASK_WAITING\n"
+    "end\n";
+
+/**
+ * @brief Lua transaction script for modifying the time statistics of a task
+ * on I/O state change (exiting a wait queue).
+ *
+ * When a task exits any wait queue from TASK_WAITING state, increment
+ * total_wait_time_ns by delta, update task state to TASK_RUNNING_RQ, modify last_ktime_ns.
+ *
+ * @param KEYS[1] pid:last_ktime_ns
+ * @param KEYS[2] pid:last_seen_state
+ * @param KEYS[3] pid:total_wait_time_ns
+ *
+ * @param ARGV[1] ktime_ns
+ */
+const char *lua_script_update_stats_task_wait_ends =
+    "local ktime_ns = ARGV[1]\n"
+    "local last_ktime_ns = redis.call('GET', KEYS[1])\n"
+    "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
+    "\n"
+    "if (last_seen_state == 0x0000 and ktime_ns >= last_ktime_ns) then -- TASK_RUNNING_RQ\n"
+    "   local delta = tonumber(ktime_ns) - tonumber(last_ktime_ns)\n"
+    "   redis.call('INCRBY', KEYS[3], delta)\n"
+    "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"
+    "   redis.call('SET', KEYS[2], 0x0000) -- TASK_RUNNING_RQ\n"
     "end\n";

@@ -57,11 +57,6 @@ void repository_update_stats_task_exits_cpu(oberon_ctx *ctx, int pid, unsigned l
 /**
  *
  */
-void repository_update_stats_task_wait_starts(oberon_ctx *ctx, int pid, unsigned long long ktime_ns);
-
-/**
- *
- */
 void repository_update_stats_task_wait_ends(oberon_ctx *ctx, int pid, unsigned long long ktime_ns);
 
 #endif

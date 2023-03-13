@@ -38,11 +38,8 @@ static int handle_rb_event(void *ctx, void *data, size_t data_size)
     }
     else if (e->prev_task_state == TASK_WAITING && e->next_task_state == TASK_RUNNING_RQ)
     {
-        /* Task exits a wait queue */
-    }
-    else if (e->prev_task_state == TASK_RUNNING_CPU && e->next_task_state == TASK_WAITING)
-    {
-        /* Task enters a wait queue */
+        /* Task exits a wait queue and enqueued to run queue */
+        repository_update_stats_task_wait_ends(ctx_data, e->pid, e->ktime_ns);
     }
     else
     {
@@ -89,21 +86,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_wakeup.o", pin_basedir);
-    if (!bpf_obj)
-    {
-        printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
-        return -1;
-    }
-
-    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_process_wait.o", pin_basedir);
-    if (!bpf_obj)
-    {
-        printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
-        return -1;
-    }
-
-    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_wait_task.o", pin_basedir);
+    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_stat_sleep.o", pin_basedir);
     if (!bpf_obj)
     {
         printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
@@ -149,6 +132,11 @@ int main(int argc, char **argv)
         return -1;
     }
     err = load_transaction_script(ctx, lua_script_update_stats_task_enters_cpu, lua_script_update_stats_task_enters_cpu_sha1_hash);
+    if (err != 0)
+    {
+        return -1;
+    }
+    err = load_transaction_script(ctx, lua_script_update_stats_task_wait_ends, lua_script_update_stats_task_wait_ends_sha1_hash);
     if (err != 0)
     {
         return -1;
