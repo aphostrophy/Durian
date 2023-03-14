@@ -36,5 +36,9 @@
     "cstring": "c",
     "oberon_common_repository.h": "c"
   },
-  "C_Cpp.errorSquiggles": "enabledIfIncludesResolve"
+  "C_Cpp.errorSquiggles": "enabledIfIncludesResolve",
+  "C_Cpp.files.exclude": {
+    "**/oberon": true,
+    "**/.vscode": true
+  }
 }
