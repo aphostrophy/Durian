@@ -3,13 +3,13 @@
 #include <unistd.h>
 #include <errno.h>
 #include <bpf/bpf.h>
-#include "trace_helpers.h"
+#include <trace_helpers.h>
+#include <bpf_load.h>
 #include <hiredis/hiredis.h>
 #include "oberon_maps.h"
 #include "oberon_common_user_bpf.h"
 #include "oberon_common_user_debug.h"
 #include "oberon_repository.h"
-#include "bpf_load.h"
 
 static int handle_rb_event(void *ctx, void *data, size_t data_size)
 {

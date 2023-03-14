@@ -6,7 +6,7 @@
 *.ko
 *.obj
 *.elf
-oberon
+oberond
 
 # Linker output
 *.ilk

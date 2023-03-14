@@ -1,6 +1,6 @@
 CLANG = clang
 
-EXECABLE = oberon
+EXECABLE = oberond
 
 SCHED_WAKEUP_NEW_PROBE_BPF = oberon_probes/sched/sched_wakeup_new
 SCHED_WAKEUP_PROBE_BPF = oberon_probes/sched/sched_wakeup
@@ -87,7 +87,7 @@ bpfload: build_sched_wakeup_new_probe \
 		 build_sched_process_exit_probe \
 		 build_sched_stat_sleep_probe
 	clang $(CFLAGS) -o $(EXECABLE) -lelf $(LOADINCLUDE) $(LIBRARY_PATH) $(BPFSO) $(HIREDISSO) \
-        $(BPFLOADER) $(BPFTEST) $(OBERONINCLUDE) loader.c -I KERNEL_SRC
+        $(BPFLOADER) $(BPFTEST) $(OBERONINCLUDE) oberond.c -I KERNEL_SRC
 
 $(EXECABLE): bpfload
 

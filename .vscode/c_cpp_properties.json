@@ -4,16 +4,14 @@
       "name": "Linux",
       "includePath": [
         "${workspaceFolder}/**",
-        "/lib/modules/5.10.102.1-custom-Jesson-Yo+/build/**",
-        "/lib/modules/5.10.102.1-custom-Jesson-Yo+/build/tools/testing/selftests/bpf",
-        "/lib/modules/5.10.102.1-custom-Jesson-Yo+/build/samples/bpf"
+        "/lib/modules/5.10.102.1-custom-Jesson-Yo+/build/**"
       ],
       "defines": [],
       "compilerPath": "/usr/bin/gcc",
       "cStandard": "gnu17",
       "cppStandard": "gnu++14",
       "intelliSenseMode": "linux-gcc-x64",
-      "configurationProvider": "ms-vscode.makefile-tools"
+      "configurationProvider": "ms-vscode.cpptools"
     }
   ],
   "version": 4
