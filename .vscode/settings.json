@@ -34,11 +34,13 @@
     "oberon_def.h": "c",
     "oberon_sched_stats_transactions.h": "c",
     "cstring": "c",
-    "oberon_common_repository.h": "c"
+    "oberon_common_repository.h": "c",
+    "oberon_def_interface.h": "c"
   },
   "C_Cpp.errorSquiggles": "enabledIfIncludesResolve",
   "C_Cpp.files.exclude": {
     "**/oberon": true,
     "**/.vscode": true
-  }
+  },
+  "cmake.configureOnOpen": false
 }
