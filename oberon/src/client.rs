@@ -1,29 +1,53 @@
 use crate::app::{App, Command, ShowCommand};
-use crate::errors::{Error, OberonResult};
+use crate::errors::OberonResult;
+use crate::repository;
 
-pub fn perform_action(app: &App, action: &Command) -> OberonResult<()> {
-    match action {
-        Command::SHOW { show_command } => perform_show(app, show_command),
+pub struct Client {
+    repository: redis::Connection,
+}
+
+impl Client {
+    pub fn new() -> Self {
+        let redis_client = redis::Client::open("redis://127.0.0.1/");
+        let con = match redis_client {
+            Ok(redis_client) => redis_client.get_connection(),
+            Err(err) => panic!("Failed to connect to Redis: {}", err),
+        };
+
+        match con {
+            Ok(con) => Client { repository: con },
+            Err(err) => panic!("Failed on opening Redis connection: {}", err),
+        }
+    }
+
+    pub fn perform_action(&mut self, app: &App, action: &Command) -> OberonResult<()> {
+        match action {
+            Command::SHOW { show_command } => self.perform_show(app, show_command),
+        }
+    }
+
+    pub fn perform_show(
+        &mut self,
+        _app: &App,
+        show_command: &Option<ShowCommand>,
+    ) -> OberonResult<()> {
+        match show_command {
+            Some(ref command) => match command {
+                ShowCommand::All(options) => match options.pid {
+                    Some(ref pid) => gen_task_complete_statistics(&mut self.repository, pid),
+                    None => gen_all_tasks_complete_statistics(&mut self.repository),
+                },
+            },
+            None => gen_all_tasks_complete_statistics(&mut self.repository),
+        }
     }
 }
 
-pub fn perform_show(app: &App, show_command: &Option<ShowCommand>) -> OberonResult<()> {
-    match show_command {
-        Some(ref command) => match command {
-            ShowCommand::All(options) => match options.pid {
-                Some(ref pid) => {
-                    println!("[COMMAND] SHOW {}", pid);
-                    Ok(())
-                }
-                None => {
-                    println!("[COMMAND] SHOW!");
-                    Ok(())
-                }
-            },
-        },
-        None => {
-            println!("[COMMAND] SHOW DEFAULT");
-            Ok(())
-        }
-    }
+pub fn gen_all_tasks_complete_statistics(conn: &mut redis::Connection) -> OberonResult<()> {
+    repository::fetch_active_tasks(conn)?;
+    Ok(())
+}
+
+pub fn gen_task_complete_statistics(_conn: &mut redis::Connection, _pid: &i32) -> OberonResult<()> {
+    Ok(())
 }
