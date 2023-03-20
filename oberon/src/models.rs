@@ -8,3 +8,9 @@ pub struct TaskStatistics {
     pub last_seen_state: i8,
     pub last_ktime_ns: i64,
 }
+
+pub trait TasksSchedStatReport {
+    fn dump(path: Option<&str>);
+    fn display();
+    fn load(path: Option<&str>);
+}
