@@ -3,6 +3,7 @@ use structopt::StructOpt;
 mod app;
 mod client;
 mod errors;
+mod models;
 mod oberon_def;
 mod repository;
 

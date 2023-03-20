@@ -1,5 +1,6 @@
 use crate::app::{App, Command, ShowCommand};
 use crate::errors::OberonResult;
+use crate::models::TaskStatistics;
 use crate::repository;
 
 pub struct Client {
@@ -35,17 +36,26 @@ impl Client {
             Some(ref command) => match command {
                 ShowCommand::All(options) => match options.pid {
                     Some(ref pid) => gen_task_complete_statistics(&mut self.repository, pid),
-                    None => gen_all_tasks_complete_statistics(&mut self.repository),
+                    None => {
+                        gen_all_tasks_complete_statistics(&mut self.repository)?;
+                        Ok(())
+                    }
                 },
             },
-            None => gen_all_tasks_complete_statistics(&mut self.repository),
+            None => {
+                gen_all_tasks_complete_statistics(&mut self.repository)?;
+                Ok(())
+            }
         }
     }
 }
 
-pub fn gen_all_tasks_complete_statistics(conn: &mut redis::Connection) -> OberonResult<()> {
-    repository::fetch_active_tasks(conn)?;
-    Ok(())
+pub fn gen_all_tasks_complete_statistics(
+    conn: &mut redis::Connection,
+) -> OberonResult<Vec<TaskStatistics>> {
+    let active_tasks_pid = repository::fetch_active_tasks(conn)?;
+    let tasks_statistics = repository::fetch_tasks_statistics(conn, active_tasks_pid)?;
+    Ok(tasks_statistics)
 }
 
 pub fn gen_task_complete_statistics(_conn: &mut redis::Connection, _pid: &i32) -> OberonResult<()> {

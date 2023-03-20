@@ -1,4 +1,4 @@
-use std::{fmt, str::Utf8Error};
+use std::{fmt, num::ParseIntError, str::Utf8Error};
 
 use redis::RedisError;
 
@@ -8,6 +8,7 @@ pub enum Error {
     ClientRefused,
     ClientOther,
     InputValidationError,
+    ParseError,
 }
 
 pub type OberonResult<T> = Result<T, Error>;
@@ -44,5 +45,11 @@ impl From<Utf8Error> for Error {
     #[inline]
     fn from(_err: Utf8Error) -> Error {
         Error::InputValidationError
+    }
+}
+
+impl From<ParseIntError> for Error {
+    fn from(_err: ParseIntError) -> Self {
+        Error::ParseError
     }
 }
