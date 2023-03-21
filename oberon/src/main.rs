@@ -2,6 +2,8 @@ use structopt::StructOpt;
 
 mod app;
 mod client;
+mod config;
+mod directories;
 mod errors;
 mod models;
 mod oberon_def;
