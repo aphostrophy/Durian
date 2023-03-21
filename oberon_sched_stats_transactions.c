@@ -22,7 +22,9 @@ char lua_script_update_stats_task_wait_ends_sha1_hash[41] = "";
  * @param KEYS[4] pid:total_wait_time_ns
  * @param KEYS[5] pid:last_seen_state
  * @param KEYS[6] pid:last_ktime_ns
- * @param KEYS[7] RUNNING_PID_SET
+ * @param KEYS[7] pid:sched_stats_start_time_ns
+ * @param KEYS[8] pid:nr_switches
+ * @param KEYS[9] RUNNING_PID_SET
  *
  * @param ARGV[1] ktime_ns
  * @param ARGV[2] comm
@@ -49,8 +51,12 @@ const char *lua_script_track_task =
     "redis.call('PERSIST', KEYS[5])\n"
     "redis.call('SET', KEYS[6], tonumber(ktime_ns)) -- pid:last_ktime_ns\n"
     "redis.call('PERSIST', KEYS[6])\n"
+    "redis.call('SET', KEYS[7], tonumber(ktime_ns)) -- pid:sched_stats_start_time_ns\n"
+    "redis.call('PERSIST', KEYS[7])\n"
+    "redis.call('SET', KEYS[8], 0) -- pid:nr_switches\n"
+    "redis.call('PERSIST', KEYS[8])\n"
 
-    "redis.call('SADD', KEYS[7], pid)\n";
+    "redis.call('SADD', KEYS[9], pid)\n";
 
 /**
  * @brief Lua transaction script for untracking a task
@@ -65,7 +71,9 @@ const char *lua_script_track_task =
  * @param KEYS[4] pid:total_wait_time_ns
  * @param KEYS[5] pid:last_seen_state
  * @param KEYS[6] pid:last_ktime_ns
- * @param KEYS[7] RUNNING_PID_SET
+ * @param KEYS[7] pid:sched_stats_start_time_ns
+ * @param KEYS[8] pid:nr_switches
+ * @param KEYS[9] RUNNING_PID_SET
  *
  * @param ARGV[1] ktime_ns
  * @param ARGV[2] pid
@@ -84,8 +92,10 @@ const char *lua_script_untrack_task =
     "redis.call('EXPIRE', KEYS[4], 300)\n"
     "redis.call('EXPIRE', KEYS[5], 300)\n"
     "redis.call('EXPIRE', KEYS[6], 300)\n"
+    "redis.call('EXPIRE', KEYS[7], 300)\n"
+    "redis.call('EXPIRE', KEYS[8], 300)\n"
 
-    "redis.call('SREM', KEYS[7], pid)\n";
+    "redis.call('SREM', KEYS[9], pid)\n";
 
 /**
  * @brief Lua transaction script that will modify the time statistics for a task
@@ -101,7 +111,9 @@ const char *lua_script_untrack_task =
  * @param KEYS[4] pid:total_wait_time_ns
  * @param KEYS[5] pid:comm
  * @param KEYS[6] pid:prio
- * @param KEYS[7] RUNNING_PID_SET
+ * @param KEYS[7] pid:sched_stats_start_time_ns
+ * @param KEYS[8] pid:nr_switches
+ * @param KEYS[9] RUNNING_PID_SET
  *
  * @param ARGV[1] ktime_ns
  *
@@ -137,8 +149,12 @@ const char *lua_script_update_stats_task_enters_cpu =
     "   redis.call('PERSIST', KEYS[5])\n"
     "   redis.call('SET', KEYS[6], prio) -- pid:prio\n"
     "   redis.call('PERSIST', KEYS[6])\n"
+    "   redis.call('SET', KEYS[7], tonumber(ktime_ns)) -- pid:sched_stats_start_time_ns\n"
+    "   redis.call('PERSIST', KEYS[7])\n"
+    "   redis.call('SET', KEYS[8], 0) -- pid:nr_switches\n"
+    "   redis.call('PERSIST', KEYS[8])\n"
 
-    "   redis.call('SADD', KEYS[7], pid)\n"
+    "   redis.call('SADD', KEYS[9], pid)\n"
     "   last_ktime_ns = ktime_ns\n"
     "end\n"
     "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
@@ -146,6 +162,7 @@ const char *lua_script_update_stats_task_enters_cpu =
     "if (last_seen_state == 0x0000 and ktime_ns >= last_ktime_ns) then -- TASK_RUNNING_RQ\n"
     "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"
     "   redis.call('SET', KEYS[2], 0x0001) -- TASK_RUNNING_CPU\n"
+    "   redis.call('INCRBY', KEYS[8], 1)\n"
     "end\n";
 
 /**

@@ -11,6 +11,8 @@ void repository_track_task(oberon_ctx *ctx, int pid, const char comm[16], int pr
                           "%d:total_wait_time_ns "
                           "%d:last_seen_state "
                           "%d:last_ktime_ns "
+                          "%d:sched_stats_start_time_ns "
+                          "%d:nr_switches "
                           "%s "
                           "%llu "
                           "%s "
@@ -18,8 +20,8 @@ void repository_track_task(oberon_ctx *ctx, int pid, const char comm[16], int pr
                           "%d "
                           "%d",
                           lua_script_track_task_sha1_hash,
-                          7,
-                          pid, pid, pid, pid, pid, pid, RUNNING_PID_SET,
+                          9,
+                          pid, pid, pid, pid, pid, pid, pid, pid, RUNNING_PID_SET,
                           ktime_ns,
                           comm,
                           prio,
@@ -38,13 +40,15 @@ void repository_untrack_task(oberon_ctx *ctx, int pid, unsigned long long ktime_
                           "%d:total_wait_time_ns "
                           "%d:last_seen_state "
                           "%d:last_ktime_ns "
+                          "%d:sched_stats_start_time_ns "
+                          "%d:nr_switches "
                           "%s "
                           "%llu "
                           "%d "
                           "%d",
                           lua_script_untrack_task_sha1_hash,
-                          7,
-                          pid, pid, pid, pid, pid, pid, RUNNING_PID_SET,
+                          9,
+                          pid, pid, pid, pid, pid, pid, pid, pid, RUNNING_PID_SET,
                           ktime_ns,
                           pid,
                           __TASK_STOPPED);
@@ -61,6 +65,8 @@ void repository_update_stats_task_enters_cpu(oberon_ctx *ctx, int pid, const cha
                           "%d:total_wait_time_ns "
                           "%d:comm "
                           "%d:prio "
+                          "%d:sched_stats_start_time_ns "
+                          "%d:nr_switches "
                           "%s "
                           "%llu "
                           "%s "
@@ -68,8 +74,8 @@ void repository_update_stats_task_enters_cpu(oberon_ctx *ctx, int pid, const cha
                           "%d "
                           "%d ",
                           lua_script_update_stats_task_enters_cpu_sha1_hash,
-                          7,
-                          pid, pid, pid, pid, pid, pid, RUNNING_PID_SET,
+                          9,
+                          pid, pid, pid, pid, pid, pid, pid, pid, RUNNING_PID_SET,
                           ktime_ns,
                           comm,
                           prio,
