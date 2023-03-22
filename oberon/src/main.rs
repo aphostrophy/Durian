@@ -8,6 +8,7 @@ mod errors;
 mod models;
 mod oberon_def;
 mod repository;
+mod sched_math;
 
 use errors::OberonResult;
 
