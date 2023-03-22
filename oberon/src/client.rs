@@ -1,5 +1,9 @@
+use std::fs::File;
+use std::io::BufWriter;
+
 use crate::app::{App, Command, ShowCommand};
 use crate::errors::OberonResult;
+use crate::models::{AllTasksCompleteStatsReport, TaskCompleteStatsReport, TasksSchedStatsReport};
 use crate::repository;
 
 pub struct Client {
@@ -26,26 +30,54 @@ impl Client {
         }
     }
 
-    pub fn perform_show(
+    fn perform_show(&mut self, app: &App, show_command: &Option<ShowCommand>) -> OberonResult<()> {
+        let report = self.gen_show_sched_stats_report(app, show_command)?;
+
+        let mut file = File::create("report.bin").unwrap();
+        let writer = BufWriter::new(&mut file);
+        bincode::serialize_into(writer, &report).unwrap();
+
+        Ok(())
+    }
+
+    fn gen_show_sched_stats_report(
         &mut self,
         _app: &App,
         show_command: &Option<ShowCommand>,
-    ) -> OberonResult<()> {
+    ) -> OberonResult<Box<dyn TasksSchedStatsReport>> {
         match show_command {
             Some(ref command) => match command {
                 ShowCommand::All(options) => match options.pid {
                     Some(ref pid) => {
-                        repository::gen_task_complete_statistics(&mut self.repository, pid)
+                        let task_stats =
+                            repository::gen_task_complete_statistics(&mut self.repository, pid)?;
+                        Ok(Box::new(TaskCompleteStatsReport { task_stats }))
                     }
                     None => {
-                        repository::gen_all_tasks_complete_statistics(&mut self.repository)?;
-                        Ok(())
+                        let tasks_stats =
+                            repository::gen_all_tasks_complete_statistics(&mut self.repository)?;
+                        let avg_io_time_ns = repository::get_tasks_average_io_time(&tasks_stats);
+                        let avg_cpu_time_ns = repository::get_tasks_average_cpu_time(&tasks_stats);
+                        Ok(Box::new(AllTasksCompleteStatsReport {
+                            num_tasks: tasks_stats.len(),
+                            avg_io_time_ns,
+                            avg_cpu_time_ns,
+                            tasks_stats,
+                        }))
                     }
                 },
             },
             None => {
-                repository::gen_all_tasks_complete_statistics(&mut self.repository)?;
-                Ok(())
+                let tasks_stats =
+                    repository::gen_all_tasks_complete_statistics(&mut self.repository)?;
+                let avg_io_time_ns = repository::get_tasks_average_io_time(&tasks_stats);
+                let avg_cpu_time_ns = repository::get_tasks_average_cpu_time(&tasks_stats);
+                Ok(Box::new(AllTasksCompleteStatsReport {
+                    num_tasks: tasks_stats.len(),
+                    avg_io_time_ns,
+                    avg_cpu_time_ns,
+                    tasks_stats,
+                }))
             }
         }
     }

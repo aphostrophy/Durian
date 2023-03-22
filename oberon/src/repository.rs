@@ -14,11 +14,15 @@ pub fn gen_all_tasks_complete_statistics(
     Ok(tasks_statistics)
 }
 
-pub fn gen_task_complete_statistics(_conn: &mut redis::Connection, _pid: &i32) -> OberonResult<()> {
-    Ok(())
+pub fn gen_task_complete_statistics(
+    conn: &mut redis::Connection,
+    pid: &i32,
+) -> OberonResult<TaskStatistics> {
+    let task_statistics = fetch_task_statistics(conn, *pid)?;
+    Ok(task_statistics)
 }
 
-fn get_tasks_average_io_time(tasks_stats: &Vec<TaskStatistics>) -> f32 {
+pub fn get_tasks_average_io_time(tasks_stats: &Vec<TaskStatistics>) -> f32 {
     let sum = tasks_stats
         .iter()
         .fold(0i128, |acc, t| acc + t.total_wait_time_ns as i128);
@@ -27,7 +31,7 @@ fn get_tasks_average_io_time(tasks_stats: &Vec<TaskStatistics>) -> f32 {
     avg
 }
 
-fn get_tasks_average_cpu_time(tasks_stats: &Vec<TaskStatistics>) -> f32 {
+pub fn get_tasks_average_cpu_time(tasks_stats: &Vec<TaskStatistics>) -> f32 {
     let sum = tasks_stats
         .iter()
         .fold(0i128, |acc, t| acc + t.total_cpu_time_ns as i128);

@@ -1,4 +1,6 @@
-#[derive(Debug)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TaskStatistics {
     pub pid: i32,
     pub comm: String,
@@ -37,15 +39,24 @@ impl TaskStatistics {
     }
 }
 
-pub trait TasksSchedStatsReport {
-    fn dump(path: Option<&str>);
-    fn display();
-    fn load(path: Option<&str>);
-}
+#[typetag::serde(tag = "driver")]
+pub trait TasksSchedStatsReport: std::fmt::Debug {}
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AllTasksCompleteStatsReport {
-    pub num_tasks: f32,
+    pub num_tasks: usize,
     pub avg_io_time_ns: f32,
     pub avg_cpu_time_ns: f32,
     pub tasks_stats: Vec<TaskStatistics>,
 }
+
+#[typetag::serde(name = "all_tasks_complete_stats_report")]
+impl TasksSchedStatsReport for AllTasksCompleteStatsReport {}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TaskCompleteStatsReport {
+    pub task_stats: TaskStatistics,
+}
+
+#[typetag::serde(name = "task_complete_stats_report")]
+impl TasksSchedStatsReport for TaskCompleteStatsReport {}
