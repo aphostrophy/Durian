@@ -65,17 +65,19 @@ pub fn fetch_task_statistics(
         format!("{}:total_cpu_time_ns", pid),
         format!("{}:last_seen_state", pid),
         format!("{}:last_ktime_ns", pid),
+        format!("{}:nr_switches", pid),
     ];
     let values: Vec<String> = conn.mget(keys)?;
 
-    let prio = values[0].parse::<i8>()?;
+    let prio = values[0].parse::<i16>()?;
     let comm = values[1].clone();
     let total_wait_time_ns = values[2].parse::<i64>()?;
     let total_cpu_time_ns = values[3].parse::<i64>()?;
     let last_seen_state = values[4].parse::<i8>()?;
     let last_ktime_ns = values[5].parse::<i64>()?;
+    let nr_switches = values[6].parse::<i32>()?;
 
-    Ok(TaskStatistics {
+    Ok(TaskStatistics::new(
         pid,
         comm,
         prio,
@@ -83,5 +85,6 @@ pub fn fetch_task_statistics(
         total_cpu_time_ns,
         last_seen_state,
         last_ktime_ns,
-    })
+        nr_switches,
+    ))
 }
