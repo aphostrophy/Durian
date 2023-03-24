@@ -3,7 +3,9 @@ use std::io::BufWriter;
 
 use crate::app::{App, Command, ShowCommand};
 use crate::errors::OberonResult;
-use crate::models::{AllTasksCompleteStatsReport, TaskCompleteStatsReport, TasksSchedStatsReport};
+use crate::models::all_tasks_complete_stats_report::AllTasksCompleteStatsReport;
+use crate::models::task_complete_stats_report::TaskCompleteStatsReport;
+use crate::models::tasks_sched_stats_report::TasksSchedStatsReport;
 use crate::repository;
 
 pub struct Client {

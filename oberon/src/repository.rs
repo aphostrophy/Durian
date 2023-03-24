@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use redis::{self, Commands};
 
 use crate::errors::OberonResult;
-use crate::models::TaskStatistics;
+use crate::models::task_statistics::TaskStatistics;
 use crate::oberon_def::running_pid_set_key;
 
 pub fn gen_all_tasks_complete_statistics(
