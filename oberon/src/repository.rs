@@ -69,6 +69,7 @@ pub fn fetch_task_statistics(
         format!("{}:total_cpu_time_ns", pid),
         format!("{}:last_seen_state", pid),
         format!("{}:last_ktime_ns", pid),
+        format!("{}:sched_stats_start_time_ns", pid),
         format!("{}:nr_switches", pid),
     ];
     let values: Vec<String> = conn.mget(keys)?;
@@ -79,7 +80,8 @@ pub fn fetch_task_statistics(
     let total_cpu_time_ns = values[3].parse::<i64>()?;
     let last_seen_state = values[4].parse::<i8>()?;
     let last_ktime_ns = values[5].parse::<i64>()?;
-    let nr_switches = values[6].parse::<i32>()?;
+    let sched_stats_start_time_ns = values[6].parse::<i64>()?;
+    let nr_switches = values[7].parse::<i32>()?;
 
     Ok(TaskStatistics::new(
         pid,
@@ -89,6 +91,7 @@ pub fn fetch_task_statistics(
         total_cpu_time_ns,
         last_seen_state,
         last_ktime_ns,
+        sched_stats_start_time_ns,
         nr_switches,
     ))
 }

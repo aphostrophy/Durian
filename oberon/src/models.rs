@@ -9,6 +9,7 @@ pub struct TaskStatistics {
     pub total_cpu_time_ns: i64,
     pub last_seen_state: i8,
     pub last_ktime_ns: i64,
+    pub sched_stats_start_time_ns: i64,
     pub nr_switches: i32,
     pub avg_cpu_timeslice: f32, // average cpu time proportion used for every context switch
 }
@@ -22,6 +23,7 @@ impl TaskStatistics {
         total_cpu_time_ns: i64,
         last_seen_state: i8,
         last_ktime_ns: i64,
+        sched_stats_start_time_ns: i64,
         nr_switches: i32,
     ) -> Self {
         let avg_cpu_timeslice = total_cpu_time_ns as f32 / nr_switches as f32;
@@ -33,6 +35,7 @@ impl TaskStatistics {
             total_cpu_time_ns,
             last_seen_state,
             last_ktime_ns,
+            sched_stats_start_time_ns,
             nr_switches,
             avg_cpu_timeslice,
         }
