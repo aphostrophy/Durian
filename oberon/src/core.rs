@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod tests;
+
 use crate::models::task_statistics::TaskStatistics;
 
 /// NOT to be confused with sched core in the linux kernel source code.
@@ -15,6 +18,10 @@ pub fn get_tasks_average_io_time(tasks_stats: &Vec<TaskStatistics>) -> f32 {
         .iter()
         .fold(0i128, |acc, t| acc + t.total_wait_time_ns as i128);
 
+    if tasks_stats.len() == 0 {
+        return 0.0;
+    }
+
     let avg = sum as f32 / tasks_stats.len() as f32;
     avg
 }
@@ -28,6 +35,10 @@ pub fn get_tasks_average_cpu_time(tasks_stats: &Vec<TaskStatistics>) -> f32 {
     let sum = tasks_stats
         .iter()
         .fold(0i128, |acc, t| acc + t.total_cpu_time_ns as i128);
+
+    if tasks_stats.len() == 0 {
+        return 0.0;
+    }
 
     let avg = sum as f32 / tasks_stats.len() as f32;
     avg
