@@ -9,6 +9,7 @@ pub struct AllTasksCompleteStatsReport {
     pub avg_io_time_ns: f32,
     pub avg_cpu_time_ns: f32,
     pub tasks_stats: Vec<TaskStatistics>,
+    pub tasks_normalized_cpu_fair_share_ns: Vec<f32>,
 }
 
 #[typetag::serde(name = "all_tasks_complete_stats_report")]

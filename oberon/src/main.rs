@@ -3,6 +3,7 @@ use structopt::StructOpt;
 mod app;
 mod client;
 mod config;
+mod core;
 mod directories;
 mod errors;
 mod models;

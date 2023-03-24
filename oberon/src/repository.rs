@@ -22,24 +22,6 @@ pub fn gen_task_complete_statistics(
     Ok(task_statistics)
 }
 
-pub fn get_tasks_average_io_time(tasks_stats: &Vec<TaskStatistics>) -> f32 {
-    let sum = tasks_stats
-        .iter()
-        .fold(0i128, |acc, t| acc + t.total_wait_time_ns as i128);
-
-    let avg = sum as f32 / tasks_stats.len() as f32;
-    avg
-}
-
-pub fn get_tasks_average_cpu_time(tasks_stats: &Vec<TaskStatistics>) -> f32 {
-    let sum = tasks_stats
-        .iter()
-        .fold(0i128, |acc, t| acc + t.total_cpu_time_ns as i128);
-
-    let avg = sum as f32 / tasks_stats.len() as f32;
-    avg
-}
-
 pub fn fetch_active_tasks(conn: &mut redis::Connection) -> OberonResult<HashSet<i32>> {
     let set_key = running_pid_set_key()?;
     let active_tasks: HashSet<i32> = conn.smembers(set_key)?;

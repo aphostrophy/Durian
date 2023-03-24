@@ -40,4 +40,23 @@ impl TaskStatistics {
             avg_cpu_timeslice,
         }
     }
+
+    /// Returns the CPU fair share based on existing task statistics.
+    ///
+    /// The timeslice used by a task for each time period assuming
+    /// task's timeslice distribution is uniform in respect to
+    /// time.
+    ///
+    /// # Arguments
+    ///
+    /// `period`: Time period where each task in the run queue are assumed
+    ///           to have been scheduled at least once, sched_latency_ns value
+    ///           can be used.
+    pub fn calculate_cpu_fair_share_per_period_ns(&self, period: i64) -> f32 {
+        let proportion =
+            period as f32 / (self.last_ktime_ns - self.sched_stats_start_time_ns) as f32;
+
+        let normalized_cpu_time_ns = proportion * self.total_cpu_time_ns as f32;
+        normalized_cpu_time_ns
+    }
 }

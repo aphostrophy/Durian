@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::BufWriter;
 
 use crate::app::{App, Command, ShowCommand};
+use crate::core;
 use crate::errors::OberonResult;
 use crate::models::all_tasks_complete_stats_report::AllTasksCompleteStatsReport;
 use crate::models::task_complete_stats_report::TaskCompleteStatsReport;
@@ -55,32 +56,28 @@ impl Client {
                             repository::gen_task_complete_statistics(&mut self.repository, pid)?;
                         Ok(Box::new(TaskCompleteStatsReport { task_stats }))
                     }
-                    None => {
-                        let tasks_stats =
-                            repository::gen_all_tasks_complete_statistics(&mut self.repository)?;
-                        let avg_io_time_ns = repository::get_tasks_average_io_time(&tasks_stats);
-                        let avg_cpu_time_ns = repository::get_tasks_average_cpu_time(&tasks_stats);
-                        Ok(Box::new(AllTasksCompleteStatsReport {
-                            num_tasks: tasks_stats.len(),
-                            avg_io_time_ns,
-                            avg_cpu_time_ns,
-                            tasks_stats,
-                        }))
-                    }
+                    None => gen_all_tasks_complete_stats_report(&mut self.repository),
                 },
             },
-            None => {
-                let tasks_stats =
-                    repository::gen_all_tasks_complete_statistics(&mut self.repository)?;
-                let avg_io_time_ns = repository::get_tasks_average_io_time(&tasks_stats);
-                let avg_cpu_time_ns = repository::get_tasks_average_cpu_time(&tasks_stats);
-                Ok(Box::new(AllTasksCompleteStatsReport {
-                    num_tasks: tasks_stats.len(),
-                    avg_io_time_ns,
-                    avg_cpu_time_ns,
-                    tasks_stats,
-                }))
-            }
+            None => gen_all_tasks_complete_stats_report(&mut self.repository),
         }
     }
+}
+
+fn gen_all_tasks_complete_stats_report(
+    repository: &mut redis::Connection,
+) -> OberonResult<Box<dyn TasksSchedStatsReport>> {
+    let tasks_stats = repository::gen_all_tasks_complete_statistics(repository)?;
+    let avg_io_time_ns = core::get_tasks_average_io_time(&tasks_stats);
+    let avg_cpu_time_ns = core::get_tasks_average_cpu_time(&tasks_stats);
+    let tasks_normalized_cpu_fair_share_ns =
+        core::get_tasks_normalized_cpu_fair_share_ns(&tasks_stats);
+
+    Ok(Box::new(AllTasksCompleteStatsReport {
+        num_tasks: tasks_stats.len(),
+        avg_io_time_ns,
+        avg_cpu_time_ns,
+        tasks_stats,
+        tasks_normalized_cpu_fair_share_ns,
+    }))
 }
