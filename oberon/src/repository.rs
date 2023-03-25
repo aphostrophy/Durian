@@ -22,9 +22,11 @@ pub fn gen_task_complete_statistics(
     Ok(task_statistics)
 }
 
+// Fetch all active tasks pids excluding 0 (init process)
 pub fn fetch_active_tasks(conn: &mut redis::Connection) -> OberonResult<HashSet<i32>> {
     let set_key = running_pid_set_key()?;
-    let active_tasks: HashSet<i32> = conn.smembers(set_key)?;
+    let mut active_tasks: HashSet<i32> = conn.smembers(set_key)?;
+    active_tasks.remove(&0);
     Ok(active_tasks)
 }
 

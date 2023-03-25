@@ -72,6 +72,8 @@ fn gen_all_tasks_complete_stats_report(
     let avg_cpu_time_ns = core::get_tasks_average_cpu_time(&tasks_stats);
     let tasks_normalized_cpu_fair_share_ns =
         core::get_tasks_normalized_cpu_fair_share_ns(&tasks_stats);
+    let tasks_ideal_normalized_cpu_fair_share_ns =
+        core::get_tasks_ideal_normalized_cpu_fair_share_ns(&tasks_stats);
 
     Ok(Box::new(AllTasksCompleteStatsReport {
         num_tasks: tasks_stats.len(),
@@ -79,5 +81,6 @@ fn gen_all_tasks_complete_stats_report(
         avg_cpu_time_ns,
         tasks_stats,
         tasks_normalized_cpu_fair_share_ns,
+        tasks_ideal_normalized_cpu_fair_share_ns,
     }))
 }
