@@ -6,6 +6,7 @@ use crate::core;
 use crate::errors::OberonResult;
 use crate::models::all_tasks_complete_stats_report::AllTasksCompleteStatsReport;
 use crate::models::task_complete_stats_report::TaskCompleteStatsReport;
+use crate::models::task_statistics::TaskStatistics;
 use crate::models::tasks_sched_stats_report::TasksSchedStatsReport;
 use crate::repository;
 
@@ -45,7 +46,7 @@ impl Client {
 
     fn gen_show_sched_stats_report(
         &mut self,
-        _app: &App,
+        app: &App,
         show_command: &Option<ShowCommand>,
     ) -> OberonResult<Box<dyn TasksSchedStatsReport>> {
         match show_command {
@@ -56,30 +57,55 @@ impl Client {
                             repository::gen_task_complete_statistics(&mut self.repository, pid)?;
                         Ok(Box::new(TaskCompleteStatsReport { task_stats }))
                     }
-                    None => gen_all_tasks_complete_stats_report(&mut self.repository),
+                    None => gen_all_tasks_complete_stats_report(&mut self.repository, app),
                 },
             },
-            None => gen_all_tasks_complete_stats_report(&mut self.repository),
+            None => gen_all_tasks_complete_stats_report(&mut self.repository, app),
         }
     }
 }
 
+/// Filters the tasks statistics based on app config.
+///
+/// Will do filtering based on:
+///
+/// - nr_switches to avoid new task bias (e.g. task with exactly 1 context switch might seem
+/// like dominating the entire CPU).
+///
+/// - priority to only select tasks that is scheduled by SCHED_NORMAL scheduling policy.
+///
+/// # Arguments
+///
+/// `tasks_stats` - unfiltered tasks statistics
+/// `app` - oberon app containing config fields
+///
+/// # Examples
+/// . . .
+fn filter_tasks(tasks_stats: Vec<TaskStatistics>, app: &App) -> Vec<TaskStatistics> {
+    tasks_stats
+        .into_iter()
+        .filter(|t| t.nr_switches >= app.min_nr_switches && t.prio >= 100 && t.prio <= 139)
+        .collect()
+}
+
 fn gen_all_tasks_complete_stats_report(
     repository: &mut redis::Connection,
+    app: &App,
 ) -> OberonResult<Box<dyn TasksSchedStatsReport>> {
     let tasks_stats = repository::gen_all_tasks_complete_statistics(repository)?;
-    let avg_io_time_ns = core::get_tasks_average_io_time(&tasks_stats);
-    let avg_cpu_time_ns = core::get_tasks_average_cpu_time(&tasks_stats);
+    let filtered_tasks_stats = filter_tasks(tasks_stats, app);
+    let avg_io_time_ns = core::get_tasks_average_io_time(&filtered_tasks_stats);
+    let avg_cpu_time_ns = core::get_tasks_average_cpu_time(&filtered_tasks_stats);
     let tasks_normalized_cpu_fair_share_ns =
-        core::get_tasks_normalized_cpu_fair_share_ns(&tasks_stats);
+        core::get_tasks_normalized_cpu_fair_share_ns(&filtered_tasks_stats);
     let tasks_ideal_normalized_cpu_fair_share_ns =
-        core::get_tasks_ideal_normalized_cpu_fair_share_ns(&tasks_stats);
+        core::get_tasks_ideal_normalized_cpu_fair_share_ns(&filtered_tasks_stats);
 
     Ok(Box::new(AllTasksCompleteStatsReport {
-        num_tasks: tasks_stats.len(),
+        num_tasks: filtered_tasks_stats.len(),
         avg_io_time_ns,
         avg_cpu_time_ns,
-        tasks_stats,
+        tasks_stats: filtered_tasks_stats,
         tasks_normalized_cpu_fair_share_ns,
         tasks_ideal_normalized_cpu_fair_share_ns,
     }))

@@ -60,12 +60,12 @@ pub fn fetch_task_statistics(
 
     let prio = values[0].parse::<i16>()?;
     let comm = values[1].clone();
-    let total_wait_time_ns = values[2].parse::<i64>()?;
-    let total_cpu_time_ns = values[3].parse::<i64>()?;
-    let last_seen_state = values[4].parse::<i8>()?;
-    let last_ktime_ns = values[5].parse::<i64>()?;
-    let sched_stats_start_time_ns = values[6].parse::<i64>()?;
-    let nr_switches = values[7].parse::<i32>()?;
+    let total_wait_time_ns = values[2].parse::<u64>()?;
+    let total_cpu_time_ns = values[3].parse::<u64>()?;
+    let last_seen_state = values[4].parse::<u8>()?;
+    let last_ktime_ns = values[5].parse::<u64>()?;
+    let sched_stats_start_time_ns = values[6].parse::<u64>()?;
+    let nr_switches = values[7].parse::<u32>()?;
 
     Ok(TaskStatistics::new(
         pid,
