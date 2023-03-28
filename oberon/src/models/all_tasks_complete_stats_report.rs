@@ -1,3 +1,6 @@
+use std::fs::File;
+use std::io::{BufWriter, Write};
+
 use serde::{Deserialize, Serialize};
 
 use super::task_statistics::TaskStatistics;
@@ -14,4 +17,15 @@ pub struct AllTasksCompleteStatsReport {
 }
 
 #[typetag::serde(name = "all_tasks_complete_stats_report")]
-impl TasksSchedStatsReport for AllTasksCompleteStatsReport {}
+impl TasksSchedStatsReport for AllTasksCompleteStatsReport {
+    fn report(&self, filename: &str) -> std::io::Result<()> {
+        let file = File::create(filename)?;
+        let mut writer = BufWriter::new(file);
+
+        // TODO: Implement
+
+        writer.flush()?;
+
+        Ok(())
+    }
+}
