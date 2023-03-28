@@ -7,9 +7,9 @@ use crate::directories::DIRECTORIES;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    pub sched_min_granularity_ns: Option<i64>,
-    pub sched_latency_ns: Option<i64>,
-    pub min_nr_switches: Option<i64>,
+    pub sched_min_granularity_ns: Option<u64>,
+    pub sched_latency_ns: Option<u64>,
+    pub min_nr_switches: Option<u32>,
 }
 
 pub fn config_file(app: &App) -> PathBuf {

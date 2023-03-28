@@ -16,6 +16,7 @@ use errors::OberonResult;
 fn main() -> OberonResult<()> {
     let mut app = app::App::from_args();
     app.validate()?;
+    app.process_config_file();
 
     let mut client = client::Client::new();
 
