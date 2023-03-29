@@ -24,6 +24,8 @@ impl TasksSchedStatsReport for AllTasksCompleteStatsReport {
 
         // TODO: Implement
 
+        writer.write(b"PID\t PRIO\n")?;
+
         writer.flush()?;
 
         Ok(())

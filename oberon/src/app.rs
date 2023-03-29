@@ -75,6 +75,11 @@ pub enum Command {
         #[structopt(subcommand)]
         show_command: Option<ShowCommand>,
     },
+    #[structopt(name = "report")]
+    REPORT {
+        #[structopt(subcommand)]
+        report_command: Option<ReportCommand>,
+    },
 }
 
 #[derive(StructOpt, Debug)]
@@ -85,4 +90,18 @@ pub enum ShowCommand {
 #[derive(StructOpt, Debug)]
 pub struct ShowCommandOptions {
     pub pid: Option<i32>,
+}
+
+#[derive(StructOpt, Debug)]
+pub enum ReportCommand {
+    All(ReportCommandOptions),
+}
+
+// All ReportCommand Enums should be of this type
+#[derive(StructOpt, Debug)]
+pub struct ReportCommandOptions {
+    pub path: Option<String>,
+
+    #[structopt(short, long, default_value = "oberon.data")]
+    pub output_path: String,
 }

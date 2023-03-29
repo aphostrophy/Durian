@@ -9,6 +9,9 @@ pub enum Error {
     ClientOther,
     InputValidationError,
     ParseError,
+    PermissionDenied,
+    FileNotFound,
+    UncategorizedError,
 }
 
 pub type OberonResult<T> = Result<T, Error>;
@@ -51,5 +54,15 @@ impl From<Utf8Error> for Error {
 impl From<ParseIntError> for Error {
     fn from(_err: ParseIntError) -> Self {
         Error::ParseError
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(err: std::io::Error) -> Self {
+        match err.kind() {
+            std::io::ErrorKind::NotFound => Error::FileNotFound,
+            std::io::ErrorKind::PermissionDenied => Error::PermissionDenied,
+            _ => Error::UncategorizedError,
+        }
     }
 }
