@@ -1,3 +1,5 @@
+use std::fmt::Arguments;
+
 #[rustfmt::skip]
 const SCHED_PRIO_TO_WEIGHT: [i32; 40] = [
     /* -20 */ 88761, 71755, 56483, 46273, 36291, 
@@ -28,4 +30,25 @@ pub fn scale_prio_to_weight(prio: i16) -> i32 {
     let offset = 20;
 
     SCHED_PRIO_TO_WEIGHT[(nice + offset) as usize]
+}
+
+pub fn prio_to_nice(prio: i16) -> i16 {
+    prio - 120
+}
+
+pub fn nice_to_prio(nice: i16) -> i16 {
+    nice + 120
+}
+
+pub fn duration_ns_to_fmt_duration(duration_ns: u64) -> String {
+    let mut remaining_seconds = duration_ns / 1_000_000_000;
+    let days = remaining_seconds / (60 * 60 * 24);
+    remaining_seconds = remaining_seconds % (60 * 60 * 24);
+    let hours = remaining_seconds / (60 * 60);
+    remaining_seconds = remaining_seconds % (60 * 60);
+    let minutes = remaining_seconds / 60;
+    remaining_seconds = remaining_seconds % 60;
+    let seconds = remaining_seconds;
+
+    format!("{:02}-{:02}:{:02}:{:02}", days, hours, minutes, seconds)
 }
