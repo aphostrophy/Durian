@@ -47,7 +47,7 @@ impl Client {
 
     fn perform_report(
         &mut self,
-        app: &App,
+        _app: &App,
         report_command: &Option<ReportCommand>,
     ) -> OberonResult<()> {
         let mut report_path = "report.bin".to_string();

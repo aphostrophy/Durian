@@ -70,6 +70,7 @@ pub fn prio_to_nice(prio: i16) -> i16 {
 /// # Examples
 ///
 /// . . .
+#[allow(dead_code)]
 pub fn nice_to_prio(nice: i16) -> i16 {
     nice + 120
 }

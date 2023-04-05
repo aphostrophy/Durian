@@ -7,8 +7,8 @@ pub enum Error {
     ClientTimeout,
     ClientRefused,
     ClientOther,
-    InputValidationError,
-    ParseError,
+    InputValidationError(String),
+    ParseError(Box<dyn std::error::Error>),
     PermissionDenied,
     FileNotFound,
     UncategorizedError,
@@ -18,7 +18,29 @@ pub type OberonResult<T> = Result<T, Error>;
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Error display is not yet implemented!")
+        match self {
+            Error::ClientConnectionTerminated => {
+                write!(f, "Repository connection dropped for Oberon client")
+            }
+            Error::ClientTimeout => {
+                write!(f, "Oberon client timeout when connecting to repository")
+            }
+            Error::ClientRefused => {
+                write!(f, "Repository refused connection for Oberon client")
+            }
+            Error::InputValidationError(s) => {
+                write!(f, "Input validation error {}", s)
+            }
+            Error::ParseError(err) => {
+                write!(f, "Parse error: {}", err)
+            }
+            Error::PermissionDenied => {
+                write!(f, "Permission denied")
+            }
+            _ => {
+                write!(f, "{} error", self)
+            }
+        }
     }
 }
 
@@ -47,13 +69,13 @@ impl From<RedisError> for Error {
 impl From<Utf8Error> for Error {
     #[inline]
     fn from(_err: Utf8Error) -> Error {
-        Error::InputValidationError
+        Error::InputValidationError("Utf8Error".to_string())
     }
 }
 
 impl From<ParseIntError> for Error {
-    fn from(_err: ParseIntError) -> Self {
-        Error::ParseError
+    fn from(err: ParseIntError) -> Self {
+        Error::ParseError(Box::new(err))
     }
 }
 
