@@ -10,12 +10,33 @@ pub struct App {
     #[structopt(short, long)]
     pub quiet: bool,
 
+    /// The minimum number of context switch a Task needs to do before it's
+    /// even considered by Oberon. If nr_switches < min_nr_switches then
+    /// Oberon will ignore that task from any processing.
+    ///
+    /// This is used if we want to ignore short-lived processes as it
+    /// might cause some bias towards calculation. We might also not
+    /// care that much of short lived processes as most of the time it doesn't
+    /// need optimization and it's harder to keep track of (same tasks
+    /// with different pids)
+    ///
+    /// e.g. Normalized CPU fair share of a newly run task might make it seem
+    /// like the task is dominating the CPU.
+    ///
     #[structopt(short, long, default_value = "0")]
     pub min_nr_switches: u32,
 
+    /// In the kernel this is known as the lower bound for the minimum time a task has to execute even
+    /// if there are other tasks with lower vruntime. Hence any task will need to run at least for
+    /// sched_min_granularity_ns before being pre-empted out (it can however, still yield() itself).
     #[structopt(long, default_value = "0")]
     pub sched_min_granularity_ns: u64,
 
+    /// In the kernel this is known as the scheduler period which is the period
+    /// in which all run queue tasks are scheduled at least once.
+    ///
+    /// Here, it's used as an imaginary period where all tasks are scheduled k number of times.
+    /// Calculation regarding normalized_cpu_fair_share will use this number. See core.rs for further details.
     #[structopt(long, default_value = "0")]
     pub sched_latency_ns: u64,
 
