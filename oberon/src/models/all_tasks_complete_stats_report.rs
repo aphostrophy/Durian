@@ -7,10 +7,12 @@ use crate::sched_math::{duration_ns_to_fmt_duration, prio_to_nice};
 
 use super::task_statistics::TaskStatistics;
 use super::tasks_sched_stats_report::TasksSchedStatsReport;
+use super::tasks_states_counts::AllTasksStatesCounts;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AllTasksCompleteStatsReport {
     pub num_tasks: usize,
+    pub tasks_states_counts: AllTasksStatesCounts,
     pub avg_io_time_ns: f32,
     pub avg_cpu_time_ns: f32,
     pub tasks_stats: Vec<TaskStatistics>,
@@ -42,7 +44,19 @@ impl TasksSchedStatsReport for AllTasksCompleteStatsReport {
 
 impl AllTasksCompleteStatsReport {
     fn report_aggregate_sched_stats(&self, writer: &mut BufWriter<File>) -> std::io::Result<()> {
-        writer.write_fmt(format_args!("Tasks:\t {} total\n", self.num_tasks))?;
+        writer.write_fmt(format_args!(
+            "Tasks:{}{} total,{}{} on cpu,{}{} on run queue,{}{} waiting,{}{} stopped\n",
+            " ".repeat(5),
+            self.num_tasks,
+            " ".repeat(5),
+            self.tasks_states_counts.num_tasks_running_cpu,
+            " ".repeat(5),
+            self.tasks_states_counts.num_tasks_running_rq,
+            " ".repeat(5),
+            self.tasks_states_counts.num_tasks_waiting,
+            " ".repeat(5),
+            self.tasks_states_counts.num_tasks_stopped,
+        ))?;
         Ok(())
     }
 

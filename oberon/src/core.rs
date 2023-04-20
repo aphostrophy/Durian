@@ -1,7 +1,13 @@
 #[cfg(test)]
 mod tests;
 
-use crate::{models::task_statistics::TaskStatistics, sched_math::scale_prio_to_weight};
+use crate::app::App;
+use crate::sched_math::scale_prio_to_weight;
+use crate::{
+    models::task_statistics::TaskStatistics, models::tasks_states_counts::AllTasksStatesCounts,
+};
+
+use crate::oberon_def::{TASK_RUNNING_CPU, TASK_RUNNING_RQ, TASK_WAITING, __TASK_STOPPED};
 
 /// NOT to be confused with sched core in the linux kernel source code.
 ///
@@ -92,4 +98,42 @@ fn get_tasks_normalized_cpu_time_sum(tasks_stats: &Vec<TaskStatistics>) -> f32 {
     tasks_stats.iter().fold(0f32, |acc, t| {
         acc + t.calculate_cpu_fair_share_per_period_ns(period)
     })
+}
+
+pub fn get_all_tasks_states_count(tasks_stats: &Vec<TaskStatistics>) -> AllTasksStatesCounts {
+    let mut tasks_states_counts = AllTasksStatesCounts::default();
+    for t in tasks_stats.iter() {
+        match t.last_seen_state {
+            s if s == *TASK_RUNNING_RQ => tasks_states_counts.num_tasks_running_rq += 1,
+            s if s == *TASK_RUNNING_CPU => tasks_states_counts.num_tasks_running_cpu += 1,
+            s if s == *TASK_WAITING => tasks_states_counts.num_tasks_waiting += 1,
+            s if s == *__TASK_STOPPED => tasks_states_counts.num_tasks_stopped += 1,
+            _ => tasks_states_counts.num_tasks_unknown_state += 1,
+        }
+    }
+
+    tasks_states_counts
+}
+
+/// Filters the tasks statistics based on app config.
+///
+/// Will do filtering based on:
+///
+/// - nr_switches to avoid new task bias (e.g. task with exactly 1 context switch might seem
+/// like dominating the entire CPU).
+///
+/// - priority to only select tasks that is scheduled by SCHED_NORMAL scheduling policy.
+///
+/// # Arguments
+///
+/// `tasks_stats` - unfiltered tasks statistics
+/// `app` - oberon app containing config fields
+///
+/// # Examples
+/// . . .
+pub fn filter_tasks(tasks_stats: Vec<TaskStatistics>, app: &App) -> Vec<TaskStatistics> {
+    tasks_stats
+        .into_iter()
+        .filter(|t| t.nr_switches >= app.min_nr_switches && t.prio >= 100 && t.prio <= 139)
+        .collect()
 }
