@@ -52,7 +52,7 @@ impl TaskStatistics {
     /// `period`: Time period where each task in the run queue are assumed
     ///           to have been scheduled at least once, sched_latency_ns value
     ///           can be used.
-    pub fn calculate_cpu_fair_share_per_period_ns(&self, period: i64) -> f32 {
+    pub fn calculate_cpu_fair_share_per_period_ns(&self, period: u64) -> f32 {
         let proportion =
             period as f32 / (self.last_ktime_ns - self.sched_stats_start_time_ns) as f32;
 

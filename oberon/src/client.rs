@@ -112,9 +112,12 @@ fn gen_all_tasks_complete_stats_report(
     let avg_io_time_ns = core::get_tasks_average_io_time(&filtered_tasks_stats);
     let avg_cpu_time_ns = core::get_tasks_average_cpu_time(&filtered_tasks_stats);
     let tasks_normalized_cpu_fair_share_ns =
-        core::get_tasks_normalized_cpu_fair_share_ns(&filtered_tasks_stats);
+        core::get_tasks_normalized_cpu_fair_share_ns(&filtered_tasks_stats, app.sched_latency_ns);
     let tasks_ideal_normalized_cpu_fair_share_ns =
-        core::get_tasks_ideal_normalized_cpu_fair_share_ns(&filtered_tasks_stats);
+        core::get_tasks_ideal_normalized_cpu_fair_share_ns(
+            &filtered_tasks_stats,
+            app.sched_latency_ns,
+        );
 
     let tasks_states_counts = core::get_all_tasks_states_count(&filtered_tasks_stats);
 

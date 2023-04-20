@@ -59,9 +59,11 @@ pub fn get_tasks_average_cpu_time(tasks_stats: &Vec<TaskStatistics>) -> f32 {
 /// # Arguments
 ///
 /// `tasks_stats`: tasks scheduling statistics.
-pub fn get_tasks_normalized_cpu_fair_share_ns(tasks_stats: &Vec<TaskStatistics>) -> Vec<f32> {
-    let period = 20 * 1000; // default 20ms (20 * 10^3 ns)
-    let normalized_cpu_time_sum = get_tasks_normalized_cpu_time_sum(&tasks_stats);
+pub fn get_tasks_normalized_cpu_fair_share_ns(
+    tasks_stats: &Vec<TaskStatistics>,
+    period: u64,
+) -> Vec<f32> {
+    let normalized_cpu_time_sum = get_tasks_normalized_cpu_time_sum(&tasks_stats, period);
 
     tasks_stats
         .iter()
@@ -74,9 +76,17 @@ pub fn get_tasks_normalized_cpu_fair_share_ns(tasks_stats: &Vec<TaskStatistics>)
 
 /// Returns the ideal CPU fair share for every task for every period.
 ///
+/// # Arguments
+///
+/// `tasks_stats`: tasks scheduling statistics
+/// `period`: an imaginary time period that is assumed to be fairly shared among
+///  the tasks in nanoseconds
+///
 /// Ideal here is defined as when a task fully use all of their fair share in the CPU.
-pub fn get_tasks_ideal_normalized_cpu_fair_share_ns(tasks_stats: &Vec<TaskStatistics>) -> Vec<f32> {
-    let period = 20 * 1000;
+pub fn get_tasks_ideal_normalized_cpu_fair_share_ns(
+    tasks_stats: &Vec<TaskStatistics>,
+    period: u64,
+) -> Vec<f32> {
     let weight_sum = get_tasks_weight_sum(&tasks_stats);
 
     tasks_stats
@@ -86,6 +96,13 @@ pub fn get_tasks_ideal_normalized_cpu_fair_share_ns(tasks_stats: &Vec<TaskStatis
 }
 
 /// Returns the sum of all task's weight
+///
+/// # Arguments
+///
+/// `tasks_stats`: tasks scheduling statistics
+/// `period`: an imaginary time period that is assumed to be fairly shared among
+///  the tasks in nanoseconds
+///
 fn get_tasks_weight_sum(tasks_stats: &Vec<TaskStatistics>) -> i64 {
     tasks_stats
         .iter()
@@ -93,13 +110,13 @@ fn get_tasks_weight_sum(tasks_stats: &Vec<TaskStatistics>) -> i64 {
 }
 
 /// Returns the sum of all normalized task's cpu time
-fn get_tasks_normalized_cpu_time_sum(tasks_stats: &Vec<TaskStatistics>) -> f32 {
-    let period = 20 * 1000;
+fn get_tasks_normalized_cpu_time_sum(tasks_stats: &Vec<TaskStatistics>, period: u64) -> f32 {
     tasks_stats.iter().fold(0f32, |acc, t| {
         acc + t.calculate_cpu_fair_share_per_period_ns(period)
     })
 }
 
+/// Returns the counts of each task states enums
 pub fn get_all_tasks_states_count(tasks_stats: &Vec<TaskStatistics>) -> AllTasksStatesCounts {
     let mut tasks_states_counts = AllTasksStatesCounts::default();
     for t in tasks_stats.iter() {

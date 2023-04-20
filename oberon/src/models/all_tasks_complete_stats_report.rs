@@ -111,8 +111,8 @@ impl AllTasksCompleteStatsReport {
         writer.write_fmt(format_args!(
             "{}PID{}FAIR_NS{}IDEAL_FAIR_NS{}PRIO{}NICE{}RECO_PRIO{}RECO_NICE\n",
             " ".repeat(4),
-            " ".repeat(4),
-            " ".repeat(4),
+            " ".repeat(11),
+            " ".repeat(5),
             " ".repeat(4),
             " ".repeat(4),
             " ".repeat(4),
@@ -127,10 +127,10 @@ impl AllTasksCompleteStatsReport {
             let ideal_share = &self.tasks_ideal_normalized_cpu_fair_share_ns[i];
 
             writer.write_fmt(format_args!(
-                "{:>7} {:>10} {:>16} {:>7} {:>7} {:>12} {:>12}\n",
+                "{:>7} {:>17} {:>17} {:>7} {:>7} {:>12} {:>12}\n",
                 t.pid,
                 format!("{:.2}", actual_share),
-                ideal_share,
+                format!("{:.2}", ideal_share),
                 t.prio,
                 prio_to_nice(t.prio),
                 "-",
