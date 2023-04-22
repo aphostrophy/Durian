@@ -98,7 +98,7 @@ void repository_update_stats_task_exits_cpu(oberon_ctx *ctx, int pid, unsigned l
                           ktime_ns);
 }
 
-void repository_update_stats_task_wait_ends(oberon_ctx *ctx, int pid, unsigned long long ktime_ns)
+void repository_update_stats_task_wait_ends(oberon_ctx *ctx, int pid, uint64_t delay, unsigned long long ktime_ns)
 {
     pipeline_push_command(ctx,
                           "EVALSHA %s "
@@ -106,9 +106,11 @@ void repository_update_stats_task_wait_ends(oberon_ctx *ctx, int pid, unsigned l
                           "%d:last_ktime_ns "
                           "%d:last_seen_state "
                           "%d:total_wait_time_ns "
+                          "%llu "
                           "%llu",
                           lua_script_update_stats_task_wait_ends_sha1_hash,
                           3,
                           pid, pid, pid,
+                          delay,
                           ktime_ns);
 }

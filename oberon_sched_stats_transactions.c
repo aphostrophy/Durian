@@ -218,16 +218,17 @@ const char *lua_script_update_stats_task_wait_starts =
  * @param KEYS[2] pid:last_seen_state
  * @param KEYS[3] pid:total_wait_time_ns
  *
- * @param ARGV[1] ktime_ns
+ * @param ARGV[1] delay
+ * @param ARGV[2] ktime_ns
  */
 const char *lua_script_update_stats_task_wait_ends =
-    "local ktime_ns = ARGV[1]\n"
+    "local delay = ARGV[1]\n"
+    "local ktime_ns = ARGV[2]\n"
     "local last_ktime_ns = redis.call('GET', KEYS[1])\n"
     "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
     "\n"
     "if (last_seen_state == 0x0000 and ktime_ns >= last_ktime_ns) then -- TASK_RUNNING_RQ\n"
-    "   local delta = tonumber(ktime_ns) - tonumber(last_ktime_ns)\n"
-    "   redis.call('INCRBY', KEYS[3], delta)\n"
+    "   redis.call('INCRBY', KEYS[3], delay)\n"
     "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"
     "   redis.call('SET', KEYS[2], 0x0000) -- TASK_RUNNING_RQ\n"
     "end\n";
