@@ -79,14 +79,14 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_switch.o", pin_basedir);
+    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_wakeup.o", pin_basedir);
     if (!bpf_obj)
     {
         printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
         return -1;
     }
 
-    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_stat_sleep.o", pin_basedir);
+    bpf_obj = load_bpf_and_tracepoint_attach("oberon_probes/sched/sched_switch.o", pin_basedir);
     if (!bpf_obj)
     {
         printf("The kernel didn't load the BPF program: %s\n", strerror(errno));

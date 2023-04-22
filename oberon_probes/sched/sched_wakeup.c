@@ -20,6 +20,16 @@ struct sched_wakeup_args
     int target_cpu;
 };
 
+/**
+ * This BPF probe is experimental since it uses sched_wakeup and we're still
+ * not sure whether it's possible. Reason is, it is not always called from the waking context.
+ * And we're not sure whether that has anything to do with the data passed in sched_wakeup_args.
+ *
+ * Our experiments showed that the result of calculating I/O time using sched_wakeup and
+ * sched_stat_sleep is very similar. But we chose sched_wakeup since it doesn't need you to
+ * turn on sched_schedstats.
+ */
+
 SEC("tracepoint/sched/sched_wakeup")
 int bpf_prog(struct sched_wakeup_args *ctx)
 {
