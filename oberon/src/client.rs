@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
 use crate::app::{App, Command, ReportCommand, ShowCommand};
+use crate::config::Config;
 use crate::core;
 use crate::errors::OberonResult;
 use crate::models::all_tasks_complete_stats_report::AllTasksCompleteStatsReport;
@@ -120,6 +121,7 @@ fn gen_all_tasks_complete_stats_report(
         );
 
     let tasks_states_counts = core::get_all_tasks_states_count(&filtered_tasks_stats);
+    let config = Config::read_config_from_app(app);
 
     Ok(Box::new(AllTasksCompleteStatsReport {
         num_tasks: filtered_tasks_stats.len(),
@@ -129,5 +131,6 @@ fn gen_all_tasks_complete_stats_report(
         tasks_stats: filtered_tasks_stats,
         tasks_normalized_cpu_fair_share_ns,
         tasks_ideal_normalized_cpu_fair_share_ns,
+        config,
     }))
 }

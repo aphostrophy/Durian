@@ -3,6 +3,7 @@ use std::io::{BufWriter, Write};
 
 use serde::{Deserialize, Serialize};
 
+use crate::config::Config;
 use crate::sched_math::{duration_ns_to_fmt_duration, prio_to_nice};
 
 use super::task_statistics::TaskStatistics;
@@ -18,6 +19,9 @@ pub struct AllTasksCompleteStatsReport {
     pub tasks_stats: Vec<TaskStatistics>,
     pub tasks_normalized_cpu_fair_share_ns: Vec<f32>,
     pub tasks_ideal_normalized_cpu_fair_share_ns: Vec<f32>,
+
+    // The config values used for analysis
+    pub config: Config,
 }
 
 #[typetag::serde(name = "all_tasks_complete_stats_report")]
@@ -35,6 +39,10 @@ impl TasksSchedStatsReport for AllTasksCompleteStatsReport {
         writer.write_fmt(format_args!("\n"))?;
 
         self.report_sched_stats_analysis(&mut writer)?;
+
+        writer.write_fmt(format_args!("\n"))?;
+
+        self.report_configurations_used(&mut writer)?;
 
         writer.flush()?;
 
@@ -57,14 +65,21 @@ impl AllTasksCompleteStatsReport {
             " ".repeat(5),
             self.tasks_states_counts.num_tasks_stopped,
         ))?;
+
+        writer.write_fmt(format_args!(
+            "Average I/O: {} ns,{} average CPU: {} ns\n",
+            self.avg_io_time_ns,
+            " ".repeat(5),
+            self.avg_cpu_time_ns
+        ))?;
         Ok(())
     }
 
     fn report_sched_stats(&self, writer: &mut BufWriter<File>) -> std::io::Result<()> {
         writer.write_fmt(format_args!(
             "{} STATISTICS {}\n",
-            "=".repeat(5),
-            "=".repeat(5)
+            "=".repeat(45),
+            "=".repeat(45)
         ))?;
 
         writer.write_fmt(format_args!(
@@ -103,8 +118,8 @@ impl AllTasksCompleteStatsReport {
     fn report_sched_stats_analysis(&self, writer: &mut BufWriter<File>) -> std::io::Result<()> {
         writer.write_fmt(format_args!(
             "{} ANALYSIS {}\n",
-            "=".repeat(5),
-            "=".repeat(5)
+            "=".repeat(46),
+            "=".repeat(46)
         ))?;
         writer.write_fmt(format_args!("\n"))?;
 
@@ -143,6 +158,19 @@ impl AllTasksCompleteStatsReport {
             "### NOTE : FAIR SHARES ARE NORMALIZED TO SCHED_LATENCY FOR ANALYSIS\n"
         ))?;
         writer.write_fmt(format_args!("\n"))?;
+
+        Ok(())
+    }
+
+    fn report_configurations_used(&self, writer: &mut BufWriter<File>) -> std::io::Result<()> {
+        writer.write_fmt(format_args!(
+            "{} ANALYSIS CONFIGURATION {}\n",
+            "=".repeat(39),
+            "=".repeat(39)
+        ))?;
+        writer.write_fmt(format_args!("\n"))?;
+
+        writer.write_fmt(format_args!("{}", self.config))?;
 
         Ok(())
     }
