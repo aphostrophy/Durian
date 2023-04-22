@@ -10,7 +10,9 @@ pub fn gen_all_tasks_complete_statistics(
     conn: &mut redis::Connection,
 ) -> OberonResult<Vec<TaskStatistics>> {
     let active_tasks_pid = fetch_active_tasks(conn)?;
-    let tasks_statistics = fetch_tasks_statistics(conn, active_tasks_pid)?;
+    let mut tasks_statistics = fetch_tasks_statistics(conn, active_tasks_pid)?;
+    tasks_statistics.sort_by_key(|t| t.pid);
+
     Ok(tasks_statistics)
 }
 
@@ -27,6 +29,7 @@ pub fn fetch_active_tasks(conn: &mut redis::Connection) -> OberonResult<HashSet<
     let set_key = running_pid_set_key()?;
     let mut active_tasks: HashSet<i32> = conn.smembers(set_key)?;
     active_tasks.remove(&0);
+
     Ok(active_tasks)
 }
 
