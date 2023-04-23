@@ -6,9 +6,9 @@ use serde::{Deserialize, Serialize};
 use crate::config::Config;
 use crate::sched_math::{duration_ns_to_fmt_duration, prio_to_nice};
 
-use super::task_statistics::TaskStatistics;
 use super::tasks_sched_stats_report::TasksSchedStatsReport;
-use super::tasks_states_counts::AllTasksStatesCounts;
+use crate::models::task_statistics::TaskStatistics;
+use crate::models::tasks_states_counts::AllTasksStatesCounts;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AllTasksCompleteStatsReport {

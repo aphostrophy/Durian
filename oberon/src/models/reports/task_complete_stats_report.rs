@@ -3,8 +3,8 @@ use std::io::{BufWriter, Write};
 
 use serde::{Deserialize, Serialize};
 
-use super::task_statistics::TaskStatistics;
 use super::tasks_sched_stats_report::TasksSchedStatsReport;
+use crate::models::task_statistics::TaskStatistics;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TaskCompleteStatsReport {

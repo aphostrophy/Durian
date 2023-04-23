@@ -5,9 +5,9 @@ use crate::app::{App, Command, ReportCommand, ShowCommand};
 use crate::config::Config;
 use crate::core;
 use crate::errors::OberonResult;
-use crate::models::all_tasks_complete_stats_report::AllTasksCompleteStatsReport;
-use crate::models::task_complete_stats_report::TaskCompleteStatsReport;
-use crate::models::tasks_sched_stats_report::TasksSchedStatsReport;
+use crate::models::reports::all_tasks_complete_stats_report::AllTasksCompleteStatsReport;
+use crate::models::reports::task_complete_stats_report::TaskCompleteStatsReport;
+use crate::models::reports::tasks_sched_stats_report::TasksSchedStatsReport;
 use crate::repository;
 
 pub struct Client {
