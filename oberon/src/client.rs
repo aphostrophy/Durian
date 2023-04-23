@@ -2,13 +2,10 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
 use crate::app::{App, Command, ReportCommand, ShowCommand};
-use crate::config::Config;
-use crate::core;
+
 use crate::errors::OberonResult;
-use crate::models::reports::all_tasks_complete_stats_report::AllTasksCompleteStatsReport;
-use crate::models::reports::task_complete_stats_report::TaskCompleteStatsReport;
-use crate::models::reports::tasks_sched_stats_report::TasksSchedStatsReport;
-use crate::repository;
+use crate::models::reports::TasksSchedStatsReport;
+use crate::models::reports::{gen_all_tasks_complete_stats_report, gen_task_complete_stats_report};
 
 pub struct Client {
     repository: redis::Connection,
@@ -79,11 +76,7 @@ impl Client {
         match show_command {
             Some(ref command) => match command {
                 ShowCommand::All(options) => match options.pid {
-                    Some(ref pid) => {
-                        let task_stats =
-                            repository::gen_task_complete_statistics(&mut self.repository, pid)?;
-                        Ok(Box::new(TaskCompleteStatsReport { task_stats }))
-                    }
+                    Some(ref pid) => gen_task_complete_stats_report(&mut self.repository, app, pid),
                     None => gen_all_tasks_complete_stats_report(&mut self.repository, app),
                 },
             },
@@ -102,35 +95,4 @@ impl Client {
 
         Ok(tasks_sched_stats_report)
     }
-}
-
-fn gen_all_tasks_complete_stats_report(
-    repository: &mut redis::Connection,
-    app: &App,
-) -> OberonResult<Box<dyn TasksSchedStatsReport>> {
-    let tasks_stats = repository::gen_all_tasks_complete_statistics(repository)?;
-    let filtered_tasks_stats = core::filter_tasks(tasks_stats, app);
-    let avg_io_time_ns = core::get_tasks_average_io_time(&filtered_tasks_stats);
-    let avg_cpu_time_ns = core::get_tasks_average_cpu_time(&filtered_tasks_stats);
-    let tasks_normalized_cpu_fair_share_ns =
-        core::get_tasks_normalized_cpu_fair_share_ns(&filtered_tasks_stats, app.sched_latency_ns);
-    let tasks_ideal_normalized_cpu_fair_share_ns =
-        core::get_tasks_ideal_normalized_cpu_fair_share_ns(
-            &filtered_tasks_stats,
-            app.sched_latency_ns,
-        );
-
-    let tasks_states_counts = core::get_all_tasks_states_count(&filtered_tasks_stats);
-    let config = Config::read_config_from_app(app);
-
-    Ok(Box::new(AllTasksCompleteStatsReport {
-        num_tasks: filtered_tasks_stats.len(),
-        tasks_states_counts,
-        avg_io_time_ns,
-        avg_cpu_time_ns,
-        tasks_stats: filtered_tasks_stats,
-        tasks_normalized_cpu_fair_share_ns,
-        tasks_ideal_normalized_cpu_fair_share_ns,
-        config,
-    }))
 }

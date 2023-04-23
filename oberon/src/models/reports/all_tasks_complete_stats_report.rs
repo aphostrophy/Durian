@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::Config;
 use crate::sched_math::{duration_ns_to_fmt_duration, prio_to_nice};
 
-use super::tasks_sched_stats_report::TasksSchedStatsReport;
+use super::TasksSchedStatsReport;
 use crate::models::task_statistics::TaskStatistics;
 use crate::models::tasks_states_counts::AllTasksStatesCounts;
 
