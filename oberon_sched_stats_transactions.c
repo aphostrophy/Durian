@@ -122,6 +122,10 @@ const char *lua_script_untrack_task =
  * @param ARGV[3] prio
  * @param ARGV[4] pid
  * @param ARGV[5] last_seen_state
+ *
+ * @note pid:comm is going to be keep updated in the repository due to possibility of
+ * comm value change by the kernel. First value is a fork of the parent's process
+ * name and will be changed only before the second context switch.
  */
 const char *lua_script_update_stats_task_enters_cpu =
     "local ktime_ns = ARGV[1]\n"
@@ -162,6 +166,7 @@ const char *lua_script_update_stats_task_enters_cpu =
     "if (last_seen_state == 0x0000 and ktime_ns >= last_ktime_ns) then -- TASK_RUNNING_RQ\n"
     "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"
     "   redis.call('SET', KEYS[2], 0x0001) -- TASK_RUNNING_CPU\n"
+    "   redis.call('SET', KEYS[5], comm) -- pid:comm\n"
     "   redis.call('INCRBY', KEYS[8], 1)\n"
     "end\n";
 
@@ -193,7 +198,7 @@ const char *lua_script_update_stats_task_exits_cpu =
  *
  * @param ARGV[1] ktime_ns
  *
- * @note UNUSED
+ * @note DEPRECATED
  */
 const char *lua_script_update_stats_task_wait_starts =
     "local ktime_ns = ARGV[1]\n"

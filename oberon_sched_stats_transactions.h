@@ -1,9 +1,6 @@
 #ifndef __OBERON_SCHED_STATS_TRANSACTIONS_H
 #define __OBERON_SCHED_STATS_TRANSACTIONS_H
 
-/**
- * Lua scripts
- */
 extern const char *lua_script_track_task;
 extern const char *lua_script_untrack_task;
 extern const char *lua_script_update_stats_task_enters_cpu;
