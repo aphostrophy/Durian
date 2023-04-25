@@ -4,7 +4,7 @@ use std::io::{BufWriter, Write};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
-use crate::sched_math::{duration_ns_to_fmt_duration, prio_to_nice};
+use crate::sched_math::{duration_ns_to_fmt_duration, nice_to_prio, prio_to_nice};
 
 use super::TasksSchedStatsReport;
 use crate::models::task_statistics::TaskStatistics;
@@ -19,6 +19,9 @@ pub struct AllTasksCompleteStatsReport {
     pub tasks_stats: Vec<TaskStatistics>,
     pub tasks_normalized_cpu_fair_share_ns: Vec<f32>,
     pub tasks_ideal_normalized_cpu_fair_share_ns: Vec<f32>,
+
+    // The priority values that correlates best to the actual fair share used
+    pub tasks_actual_fair_share_nice: Vec<i16>,
 
     // The config values used for analysis
     pub config: Config,
@@ -124,7 +127,7 @@ impl AllTasksCompleteStatsReport {
         writer.write_fmt(format_args!("\n"))?;
 
         writer.write_fmt(format_args!(
-            "{}PID{}FAIR_NS{}IDEAL_FAIR_NS{}PRIO{}NICE{}RECO_PRIO{}RECO_NICE\n",
+            "{}PID{}FAIR_NS{}IDEAL_FAIR_NS{}PRIO{}NICE{}FAIR_SHARE_PRIO{}FAIR_SHARE_NICE\n",
             " ".repeat(4),
             " ".repeat(11),
             " ".repeat(5),
@@ -140,16 +143,17 @@ impl AllTasksCompleteStatsReport {
             let t = &self.tasks_stats[i];
             let actual_share = &self.tasks_normalized_cpu_fair_share_ns[i];
             let ideal_share = &self.tasks_ideal_normalized_cpu_fair_share_ns[i];
+            let actual_fair_share_nice = &self.tasks_actual_fair_share_nice[i];
 
             writer.write_fmt(format_args!(
-                "{:>7} {:>17} {:>17} {:>7} {:>7} {:>12} {:>12}\n",
+                "{:>7} {:>17} {:>17} {:>7} {:>7} {:>18} {:>18}\n",
                 t.pid,
                 format!("{:.2}", actual_share),
                 format!("{:.2}", ideal_share),
                 t.prio,
                 prio_to_nice(t.prio),
-                "-",
-                "-"
+                nice_to_prio(*actual_fair_share_nice),
+                format!("{:+}", actual_fair_share_nice),
             ))?;
         }
 

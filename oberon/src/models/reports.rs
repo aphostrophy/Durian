@@ -35,12 +35,19 @@ pub fn gen_all_tasks_complete_stats_report(
             app.sched_latency_ns,
         );
 
-    let tasks_states_counts = core::get_all_tasks_states_count(&filtered_tasks_stats);
+    let tasks_states_counts: super::tasks_states_counts::AllTasksStatesCounts =
+        core::get_all_tasks_states_count(&filtered_tasks_stats);
+    let tasks_actual_fair_share_nice = core::calculate_tasks_actual_fair_share_prio(
+        &tasks_normalized_cpu_fair_share_ns,
+        &tasks_ideal_normalized_cpu_fair_share_ns,
+    );
+
     let config = Config::read_config_from_app(app);
 
     Ok(Box::new(AllTasksCompleteStatsReport {
         num_tasks: filtered_tasks_stats.len(),
         tasks_states_counts,
+        tasks_actual_fair_share_nice,
         avg_io_time_ns,
         avg_cpu_time_ns,
         tasks_stats: filtered_tasks_stats,

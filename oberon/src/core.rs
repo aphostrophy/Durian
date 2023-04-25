@@ -154,3 +154,30 @@ pub fn filter_tasks(tasks_stats: Vec<TaskStatistics>, app: &App) -> Vec<TaskStat
         .filter(|t| t.nr_switches >= app.min_nr_switches && t.prio >= 100 && t.prio <= 139)
         .collect()
 }
+
+/// Calculates the actual tasks priority based on their used fair shares
+///
+///
+pub fn calculate_tasks_actual_fair_share_prio(
+    actual_fair_shares: &Vec<f32>,
+    ideal_fair_shares: &Vec<f32>,
+) -> Vec<i16> {
+    let scaling = 1.25;
+    let mut delta_prio = Vec::new();
+
+    for i in 0..actual_fair_shares.len() {
+        let actual = actual_fair_shares[i];
+        let ideal = ideal_fair_shares[i];
+
+        let log_actual = actual.log(scaling);
+        let log_ideal = ideal.log(scaling);
+        let log_scaling = scaling.log(scaling);
+
+        let k = (log_actual - log_ideal) / log_scaling;
+        let clamped_k = k.max(-20.0).min(19.0);
+        let rounded_k = clamped_k.round() as i16;
+        delta_prio.push(rounded_k);
+    }
+
+    delta_prio
+}
