@@ -3,7 +3,7 @@
 
 #define PATH_MAX 4096
 #define PID_MAX 32768
-#define SCHED_EVENT_RINGBUF_SIZE 4096 * 256 // HAS TO BE MULTIPLE OF PAGE SIZE
+#define SCHED_EVENT_RINGBUF_SIZE 4096 * 4096 // HAS TO BE MULTIPLE OF PAGE SIZE
 
 /**
  * Used in sched_event_data_t->prev_task_state and sched_event_data_t->next_task_state

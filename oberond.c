@@ -53,6 +53,16 @@ int main(int argc, char **argv)
     struct bpf_object *bpf_obj;
     int err, fd, pinned;
 
+    /**
+     * Connect to redis for storing persistent task statistics
+     */
+    redisContext *redis_context = redisConnect("localhost", 6379);
+    if (redis_context == NULL || redis_context->err)
+    {
+        printf("Error: %s\n", redis_context == NULL ? "connection error" : redis_context->errstr);
+        return -1;
+    }
+
     pinned = bpf_obj_get(sched_event_map_file_path);
     if (pinned < 0)
     {
@@ -97,16 +107,6 @@ int main(int argc, char **argv)
     if (!bpf_obj)
     {
         printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
-        return -1;
-    }
-
-    /**
-     * Connect to redis for storing persistent task statistics
-     */
-    redisContext *redis_context = redisConnect("localhost", 6379);
-    if (redis_context == NULL || redis_context->err)
-    {
-        printf("Error: %s\n", redis_context == NULL ? "connection error" : redis_context->errstr);
         return -1;
     }
 
