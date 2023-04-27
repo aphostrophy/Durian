@@ -63,6 +63,38 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    durian_ctx *ctx = malloc(sizeof(durian_ctx));
+    ctx->redis_context = redis_context;
+    ctx->success = 1;
+    ctx->redis_cmd_cnt = 0;
+
+    /* Preload lua scripts */
+    err = load_transaction_script(ctx, lua_script_track_task, lua_script_track_task_sha1_hash);
+    if (err != 0)
+    {
+        return -1;
+    }
+    err = load_transaction_script(ctx, lua_script_untrack_task, lua_script_untrack_task_sha1_hash);
+    if (err != 0)
+    {
+        return -1;
+    }
+    err = load_transaction_script(ctx, lua_script_update_stats_task_exits_cpu, lua_script_update_stats_task_exits_cpu_sha1_hash);
+    if (err != 0)
+    {
+        return -1;
+    }
+    err = load_transaction_script(ctx, lua_script_update_stats_task_enters_cpu, lua_script_update_stats_task_enters_cpu_sha1_hash);
+    if (err != 0)
+    {
+        return -1;
+    }
+    err = load_transaction_script(ctx, lua_script_update_stats_task_wait_ends, lua_script_update_stats_task_wait_ends_sha1_hash);
+    if (err != 0)
+    {
+        return -1;
+    }
+
     pinned = bpf_obj_get(sched_event_map_file_path);
     if (pinned < 0)
     {
@@ -107,38 +139,6 @@ int main(int argc, char **argv)
     if (!bpf_obj)
     {
         printf("The kernel didn't load the BPF program: %s\n", strerror(errno));
-        return -1;
-    }
-
-    durian_ctx *ctx = malloc(sizeof(durian_ctx));
-    ctx->redis_context = redis_context;
-    ctx->success = 1;
-    ctx->redis_cmd_cnt = 0;
-
-    /* Preload lua scripts */
-    err = load_transaction_script(ctx, lua_script_track_task, lua_script_track_task_sha1_hash);
-    if (err != 0)
-    {
-        return -1;
-    }
-    err = load_transaction_script(ctx, lua_script_untrack_task, lua_script_untrack_task_sha1_hash);
-    if (err != 0)
-    {
-        return -1;
-    }
-    err = load_transaction_script(ctx, lua_script_update_stats_task_exits_cpu, lua_script_update_stats_task_exits_cpu_sha1_hash);
-    if (err != 0)
-    {
-        return -1;
-    }
-    err = load_transaction_script(ctx, lua_script_update_stats_task_enters_cpu, lua_script_update_stats_task_enters_cpu_sha1_hash);
-    if (err != 0)
-    {
-        return -1;
-    }
-    err = load_transaction_script(ctx, lua_script_update_stats_task_wait_ends, lua_script_update_stats_task_wait_ends_sha1_hash);
-    if (err != 0)
-    {
         return -1;
     }
 
