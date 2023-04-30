@@ -35,7 +35,8 @@
     "durian_sched_stats_transactions.h": "c",
     "cstring": "c",
     "durian_common_repository.h": "c",
-    "durian_def_interface.h": "c"
+    "durian_def_interface.h": "c",
+    "durian_repository.h": "c"
   },
   "C_Cpp.errorSquiggles": "enabledIfIncludesResolve",
   "C_Cpp.files.exclude": {
