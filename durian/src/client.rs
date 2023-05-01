@@ -48,7 +48,7 @@ impl Client {
 
     fn perform_report(
         &mut self,
-        _app: &App,
+        app: &App,
         report_command: &Option<ReportCommand>,
     ) -> DurianResult<()> {
         let mut report_path = "report.bin".to_string();
@@ -67,7 +67,7 @@ impl Client {
         let tasks_sched_stats_report: Box<dyn TasksSchedStatsReport> =
             self.gen_deserialized_report(report_path)?;
 
-        tasks_sched_stats_report.report(&output_path)?;
+        tasks_sched_stats_report.report(&output_path, app)?;
 
         Ok(())
     }

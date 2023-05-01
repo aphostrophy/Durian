@@ -3,6 +3,8 @@ use std::io::{BufWriter, Write};
 
 use serde::{Deserialize, Serialize};
 
+use crate::app::App;
+
 use super::TasksSchedStatsReport;
 use crate::models::task_statistics::TaskStatistics;
 
@@ -13,7 +15,7 @@ pub struct TaskCompleteStatsReport {
 
 #[typetag::serde(name = "task_complete_stats_report")]
 impl TasksSchedStatsReport for TaskCompleteStatsReport {
-    fn report(&self, filename: &str) -> std::io::Result<()> {
+    fn report(&self, filename: &str, _app: &App) -> std::io::Result<()> {
         let file = File::create(filename)?;
         let mut writer = BufWriter::new(file);
 
