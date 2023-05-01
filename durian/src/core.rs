@@ -162,7 +162,9 @@ pub fn calculate_tasks_actual_fair_share_prio(
     actual_fair_shares: &Vec<f32>,
     ideal_fair_shares: &Vec<f32>,
 ) -> Vec<i16> {
-    let scaling = 1.25;
+    // This value is calculated using this formula.
+    // Σ (sched_weight[nice+1]/sched_weight[nice])/(40-1), for all nice values (-20 to +19)
+    let scaling = 1.2495293703659085;
     let mut delta_prio = Vec::new();
 
     for i in 0..actual_fair_shares.len() {
@@ -173,7 +175,7 @@ pub fn calculate_tasks_actual_fair_share_prio(
         let log_ideal = ideal.log(scaling);
         let log_scaling = scaling.log(scaling);
 
-        let k = (log_actual - log_ideal) / log_scaling;
+        let k = (log_ideal - log_actual) / log_scaling;
         let clamped_k = k.max(-20.0).min(19.0);
         let rounded_k = clamped_k.round() as i16;
         delta_prio.push(rounded_k);
