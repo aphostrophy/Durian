@@ -91,10 +91,10 @@ impl App {
 
 #[derive(StructOpt, Debug)]
 pub enum Command {
-    #[structopt(name = "show")]
-    SHOW {
+    #[structopt(name = "record")]
+    RECORD {
         #[structopt(subcommand)]
-        show_command: Option<ShowCommand>,
+        record_command: Option<RecordCommand>,
     },
     #[structopt(name = "report")]
     REPORT {
@@ -104,12 +104,12 @@ pub enum Command {
 }
 
 #[derive(StructOpt, Debug)]
-pub enum ShowCommand {
-    All(ShowCommandOptions),
+pub enum RecordCommand {
+    All(RecordCommandOptions),
 }
 
 #[derive(StructOpt, Debug)]
-pub struct ShowCommandOptions {
+pub struct RecordCommandOptions {
     pub pid: Option<i32>,
 }
 

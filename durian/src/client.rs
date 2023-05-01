@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
-use crate::app::{App, Command, ReportCommand, ShowCommand};
+use crate::app::{App, Command, RecordCommand, ReportCommand};
 
 use crate::errors::DurianResult;
 use crate::models::reports::TasksSchedStatsReport;
@@ -27,13 +27,17 @@ impl Client {
 
     pub fn perform_action(&mut self, app: &App, action: &Command) -> DurianResult<()> {
         match action {
-            Command::SHOW { show_command } => self.perform_show(app, show_command),
+            Command::RECORD { record_command } => self.perform_record(app, record_command),
             Command::REPORT { report_command } => self.perform_report(app, report_command),
         }
     }
 
-    fn perform_show(&mut self, app: &App, show_command: &Option<ShowCommand>) -> DurianResult<()> {
-        let report = self.gen_show_sched_stats_report(app, show_command)?;
+    fn perform_record(
+        &mut self,
+        app: &App,
+        record_command: &Option<RecordCommand>,
+    ) -> DurianResult<()> {
+        let report = self.gen_show_sched_stats_report(app, record_command)?;
 
         let mut file = File::create("report.bin")?;
         let writer = BufWriter::new(&mut file);
@@ -71,11 +75,11 @@ impl Client {
     fn gen_show_sched_stats_report(
         &mut self,
         app: &App,
-        show_command: &Option<ShowCommand>,
+        record_command: &Option<RecordCommand>,
     ) -> DurianResult<Box<dyn TasksSchedStatsReport>> {
-        match show_command {
+        match record_command {
             Some(ref command) => match command {
-                ShowCommand::All(options) => match options.pid {
+                RecordCommand::All(options) => match options.pid {
                     Some(ref pid) => gen_task_complete_stats_report(&mut self.repository, app, pid),
                     None => gen_all_tasks_complete_stats_report(&mut self.repository, app),
                 },
