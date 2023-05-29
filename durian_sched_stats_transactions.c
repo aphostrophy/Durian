@@ -74,6 +74,7 @@ const char *lua_script_track_task =
  * @param KEYS[7] pid:sched_stats_start_time_ns
  * @param KEYS[8] pid:nr_switches
  * @param KEYS[9] RUNNING_PID_SET
+ * @param KEYS[10] EXPIRED_PID_SET
  *
  * @param ARGV[1] ktime_ns
  * @param ARGV[2] pid
@@ -83,6 +84,10 @@ const char *lua_script_untrack_task =
     "local ktime_ns = ARGV[1]\n"
     "local pid = ARGV[2]\n"
     "local last_seen_state = ARGV[3]\n"
+
+    "-- 240 seconds expiry, slightly lower than 300 seconds\n"
+    "local pid_expiry_time_ns = tonumber(ktime_ns) + 240000000000\n"
+
     "redis.call('SET', KEYS[5], last_seen_state) -- pid:last_seen_state\n"
     "redis.call('SET', KEYS[6], ktime_ns) -- pid:last_ktime_ns\n"
 
@@ -95,7 +100,10 @@ const char *lua_script_untrack_task =
     "redis.call('EXPIRE', KEYS[7], 300)\n"
     "redis.call('EXPIRE', KEYS[8], 300)\n"
 
-    "redis.call('SREM', KEYS[9], pid)\n";
+    "redis.call('SREM', KEYS[9], pid)\n"
+
+    "redis.call('ZREM', KEYS[10], 0, ktime_ns)\n"
+    "redis.call('ZADD', KEYS[10], pid_expiry_time_ns, pid)\n";
 
 /**
  * @brief Lua transaction script that will modify the time statistics for a task
@@ -239,7 +247,7 @@ const char *lua_script_update_stats_task_wait_ends =
     "local last_ktime_ns = redis.call('GET', KEYS[1])\n"
     "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
     "\n"
-    "if (ktime_ns >= last_ktime_ns) then -- TASK_RUNNING_RQ\n"
+    "if (last_ktime_ns and tonumber(ktime_ns) >= tonumber(last_ktime_ns)) then -- TASK_RUNNING_RQ\n"
     "   local delta = tonumber(ktime_ns) - tonumber(last_ktime_ns)\n"
     "   redis.call('INCRBY', KEYS[3], delta)\n"
     "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"

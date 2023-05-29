@@ -43,12 +43,13 @@ void repository_untrack_task(durian_ctx *ctx, int pid, unsigned long long ktime_
                           "%d:sched_stats_start_time_ns "
                           "%d:nr_switches "
                           "%s "
+                          "%s "
                           "%llu "
                           "%d "
                           "%d",
                           lua_script_untrack_task_sha1_hash,
-                          9,
-                          pid, pid, pid, pid, pid, pid, pid, pid, RUNNING_PID_SET,
+                          10,
+                          pid, pid, pid, pid, pid, pid, pid, pid, RUNNING_PID_SET, EXPIRED_PID_SET,
                           ktime_ns,
                           pid,
                           __TASK_STOPPED);

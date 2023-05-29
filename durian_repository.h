@@ -7,6 +7,7 @@
 #include "durian_sched_stats_transactions.h"
 
 #define RUNNING_PID_SET "RUNNING_PID_SET"
+#define EXPIRED_PID_SET "EXPIRED_PID_SET"
 
 /**
  * Starts tracking a newly born task lifecycle to the repository
