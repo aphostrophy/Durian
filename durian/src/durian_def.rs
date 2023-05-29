@@ -10,11 +10,18 @@ mod c {
         pub static ITASK_WAITING: c_uchar;
         pub static I__TASK_STOPPED: c_uchar;
         pub static IRUNNING_PID_SET: *const c_char;
+        pub static IEXPIRED_PID_SET: *const c_char;
     }
 }
 
 pub fn running_pid_set_key() -> Result<&'static str, Utf8Error> {
     let char_ptr = unsafe { c::IRUNNING_PID_SET };
+    let c_str = unsafe { CStr::from_ptr(char_ptr) };
+    c_str.to_str()
+}
+
+pub fn expired_pid_set_key() -> Result<&'static str, Utf8Error> {
+    let char_ptr = unsafe { c::IEXPIRED_PID_SET };
     let c_str = unsafe { CStr::from_ptr(char_ptr) };
     c_str.to_str()
 }

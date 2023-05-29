@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use redis::{self, Commands};
 
-use crate::durian_def::running_pid_set_key;
+use crate::durian_def::{expired_pid_set_key, running_pid_set_key};
 use crate::errors::DurianResult;
 use crate::models::task_statistics::TaskStatistics;
 
@@ -10,7 +10,10 @@ pub fn gen_all_tasks_complete_statistics(
     conn: &mut redis::Connection,
 ) -> DurianResult<Vec<TaskStatistics>> {
     let active_tasks_pid = fetch_active_tasks(conn)?;
+    let expired_tasks_pid = fetch_expired_tasks(conn)?;
     let mut tasks_statistics = fetch_tasks_statistics(conn, active_tasks_pid)?;
+    let mut expired_tasks_statistics = fetch_tasks_statistics(conn, expired_tasks_pid)?;
+    tasks_statistics.append(&mut expired_tasks_statistics);
     tasks_statistics.sort_by_key(|t| t.pid);
 
     Ok(tasks_statistics)
@@ -33,6 +36,14 @@ pub fn fetch_active_tasks(conn: &mut redis::Connection) -> DurianResult<HashSet<
     Ok(active_tasks)
 }
 
+// Fetch all expired tasks (__TASK_STOPPED)
+pub fn fetch_expired_tasks(conn: &mut redis::Connection) -> DurianResult<HashSet<i32>> {
+    let set_key = expired_pid_set_key()?;
+    let expired_tasks: HashSet<i32> = conn.zrange(set_key, 0, -1)?;
+
+    Ok(expired_tasks)
+}
+
 pub fn fetch_tasks_statistics(
     conn: &mut redis::Connection,
     pids: HashSet<i32>,
@@ -40,7 +51,8 @@ pub fn fetch_tasks_statistics(
     let stats = pids
         .iter()
         .map(|pid| fetch_task_statistics(conn, *pid))
-        .collect::<Result<Vec<_>, _>>()?;
+        .filter_map(Result::ok)
+        .collect::<Vec<_>>();
 
     Ok(stats)
 }
