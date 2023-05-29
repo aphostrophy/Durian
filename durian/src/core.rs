@@ -163,7 +163,7 @@ pub fn calculate_tasks_actual_fair_share_prio(
     ideal_fair_shares: &Vec<f32>,
 ) -> Vec<i16> {
     // This value is calculated using this formula.
-    // Σ (sched_weight[nice+1]/sched_weight[nice])/(40-1), for all nice values (-20 to +19)
+    // Σ (sched_weight[nice]/sched_weight[nice+1])/(40-1), for all nice values (-20 to +19)
     let scaling = 1.2495293703659085;
     let mut delta_prio = Vec::new();
 

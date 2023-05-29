@@ -18,27 +18,27 @@ static int handle_rb_event(void *ctx, void *data, size_t data_size)
 
     if (e->prev_task_state == __TASK_STOPPED && e->next_task_state == TASK_RUNNING_RQ)
     {
-        /* Task starts */
+        /* Task started */
         repository_track_task(ctx_data, e->pid, e->comm, e->prio, e->ktime_ns);
     }
     else if (e->prev_task_state == TASK_RUNNING_CPU && e->next_task_state == __TASK_STOPPED)
     {
-        /* Task terminates */
+        /* Task terminated */
         repository_untrack_task(ctx_data, e->pid, e->ktime_ns);
     }
     else if (e->prev_task_state == TASK_RUNNING_CPU && e->next_task_state == TASK_RUNNING_RQ)
     {
-        /* Task switches */
-        repository_update_stats_task_exits_cpu(ctx_data, e->pid, e->ktime_ns);
+        /* Task switched out */
+        repository_update_stats_task_exits_cpu(ctx_data, e->pid, e->ktime_ns, e->trace_sched_switch_state);
     }
     else if (e->prev_task_state == TASK_RUNNING_RQ && e->next_task_state == TASK_RUNNING_CPU)
     {
-        /* Task switches */
+        /* Task switched in */
         repository_update_stats_task_enters_cpu(ctx_data, e->pid, e->comm, e->prio, e->ktime_ns);
     }
     else if (e->prev_task_state == TASK_WAITING && e->next_task_state == TASK_RUNNING_RQ)
     {
-        /* Task exits a wait queue and enqueued to run queue */
+        /* Task exited a wait queue and enqueued to run queue */
         repository_update_stats_task_wait_ends(ctx_data, e->pid, e->ktime_ns);
     }
     else

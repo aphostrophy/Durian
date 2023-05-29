@@ -83,7 +83,7 @@ void repository_update_stats_task_enters_cpu(durian_ctx *ctx, int pid, const cha
                           TASK_RUNNING_RQ);
 }
 
-void repository_update_stats_task_exits_cpu(durian_ctx *ctx, int pid, unsigned long long ktime_ns)
+void repository_update_stats_task_exits_cpu(durian_ctx *ctx, int pid, unsigned long long ktime_ns, int trace_sched_switch_state)
 {
     pipeline_push_command(ctx,
                           "EVALSHA %s "
@@ -91,11 +91,13 @@ void repository_update_stats_task_exits_cpu(durian_ctx *ctx, int pid, unsigned l
                           "%d:last_ktime_ns "
                           "%d:last_seen_state "
                           "%d:total_cpu_time_ns "
-                          "%llu",
+                          "%llu "
+                          "%d",
                           lua_script_update_stats_task_exits_cpu_sha1_hash,
                           3,
                           pid, pid, pid,
-                          ktime_ns);
+                          ktime_ns,
+                          trace_sched_switch_state);
 }
 
 void repository_update_stats_task_wait_ends(durian_ctx *ctx, int pid, unsigned long long ktime_ns)

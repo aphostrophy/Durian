@@ -22,6 +22,24 @@ struct sched_switch_args
     int next_prio;
 };
 
+int _map_task_kernel_state_to_durian_enum(long long state)
+{
+    if (state == KERNEL_TASK_RUNNING)
+    {
+        return TASK_RUNNING_RQ;
+    }
+    else if (state == KERNEL_TASK_INTERRUPTIBLE || state == KERNEL_TASK_UNINTERRUPTIBLE)
+    {
+        return TASK_WAITING;
+    }
+    else if (state == KERNEL__TASK_STOPPED)
+    {
+        return __TASK_STOPPED;
+    }
+
+    return TASK_RUNNING_RQ;
+}
+
 SEC("tracepoint/sched/sched_switch")
 int bpf_prog(struct sched_switch_args *ctx)
 {
@@ -36,6 +54,7 @@ int bpf_prog(struct sched_switch_args *ctx)
     // task goes back to the run queue
     prev_data.prev_task_state = TASK_RUNNING_CPU;
     prev_data.next_task_state = TASK_RUNNING_RQ;
+    prev_data.trace_sched_switch_state = _map_task_kernel_state_to_durian_enum(ctx->prev_state);
     bpf_probe_read_kernel_str(&prev_data.comm, sizeof(prev_data.comm), ctx->prev_comm);
 
     // next_data for tracing task that is entering the CPU

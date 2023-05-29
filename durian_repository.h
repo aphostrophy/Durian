@@ -57,7 +57,7 @@ void repository_update_stats_task_enters_cpu(durian_ctx *ctx, int pid, const cha
 /**
  *
  */
-void repository_update_stats_task_exits_cpu(durian_ctx *ctx, int pid, unsigned long long ktime_ns);
+void repository_update_stats_task_exits_cpu(durian_ctx *ctx, int pid, unsigned long long ktime_ns, int trace_sched_switch_state);
 
 /**
  *

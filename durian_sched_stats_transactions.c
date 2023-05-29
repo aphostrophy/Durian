@@ -99,7 +99,7 @@ const char *lua_script_untrack_task =
 
 /**
  * @brief Lua transaction script that will modify the time statistics for a task
- * on CPU state change.
+ * on CPU state change (task enter).
  *
  * Will do the initial task tracking mechanism if task is not already tracked.
  *
@@ -171,17 +171,26 @@ const char *lua_script_update_stats_task_enters_cpu =
     "end\n";
 
 /**
+ * @brief Lua transaction script that will modify the time statistics for a task
+ * on CPU state change (task exited)
  *
+ * @param KEYS[1] pid:last_ktime_ns
+ * @param KEYS[2] pid:last_seen_state
+ * @param KEYS[3] pid:total_cpu_time_ns
+ *
+ * @param ARGV[1] ktime_ns
+ * @param ARGV[2] trace_sched_switch_state
  */
 const char *lua_script_update_stats_task_exits_cpu =
     "local ktime_ns = ARGV[1]\n"
+    "local trace_sched_switch_state = ARGV[2]\n"
     "local last_ktime_ns = redis.call('GET', KEYS[1])\n"
     "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
     "\n"
     "if (last_seen_state == 0x0001 and ktime_ns >= last_ktime_ns) then -- TASK_RUNNING_CPU\n"
     "   local delta = tonumber(ktime_ns) - tonumber(last_ktime_ns)\n"
     "   redis.call('INCRBY', KEYS[3], delta)\n"
-    "   redis.call('SET', KEYS[2], 0x0000) -- TASK_RUNNING_RQ\n"
+    "   redis.call('SET', KEYS[2], trace_sched_switch_state) -- trace_sched_switch_state\n"
     "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"
     "end\n";
 
@@ -230,7 +239,7 @@ const char *lua_script_update_stats_task_wait_ends =
     "local last_ktime_ns = redis.call('GET', KEYS[1])\n"
     "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
     "\n"
-    "if (last_seen_state == 0x0000 and ktime_ns >= last_ktime_ns) then -- TASK_RUNNING_RQ\n"
+    "if (ktime_ns >= last_ktime_ns) then -- TASK_RUNNING_RQ\n"
     "   local delta = tonumber(ktime_ns) - tonumber(last_ktime_ns)\n"
     "   redis.call('INCRBY', KEYS[3], delta)\n"
     "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"
