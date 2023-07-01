@@ -70,6 +70,7 @@ pub fn fetch_task_statistics(
         format!("{}:last_ktime_ns", pid),
         format!("{}:sched_stats_start_time_ns", pid),
         format!("{}:nr_switches", pid),
+        format!("{}:nr_wait_switches", pid),
     ];
     let values: Vec<String> = conn.mget(keys)?;
 
@@ -81,6 +82,7 @@ pub fn fetch_task_statistics(
     let last_ktime_ns = values[5].parse::<u64>()?;
     let sched_stats_start_time_ns = values[6].parse::<u64>()?;
     let nr_switches = values[7].parse::<u32>()?;
+    let nr_wait_switches = values[8].parse::<u32>()?;
 
     Ok(TaskStatistics::new(
         pid,
@@ -92,5 +94,6 @@ pub fn fetch_task_statistics(
         last_ktime_ns,
         sched_stats_start_time_ns,
         nr_switches,
+        nr_wait_switches,
     ))
 }

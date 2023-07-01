@@ -144,15 +144,16 @@ impl PreprocessedReport {
         ))?;
 
         writer.write_fmt(format_args!(
-            "{}PID{}PRIO{}NICE{}TIME+{}COMMAND{}TOTAL_CPU(NS){}TOTAL_WAIT(NS){}NR_SWITCH\n",
+            "{}PID{}PRIO{}NICE{}TIME+{}COMMAND{}TOTAL_CPU(NS){}TOTAL_WAIT(NS){}NR_WAIT_SWITCH{}NR_SWITCH\n",
             " ".repeat(4),
             " ".repeat(1),
             " ".repeat(2),
-            " ".repeat(8),
+            " ".repeat(7),
             " ".repeat(11),
-            " ".repeat(5),
+            " ".repeat(1),
             " ".repeat(4),
-            " ".repeat(3),
+            " ".repeat(1),
+            " ".repeat(1),
         ))?;
 
         let n = self.tasks_stats.len();
@@ -161,7 +162,7 @@ impl PreprocessedReport {
             let t = &self.tasks_stats[i];
 
             writer.write_fmt(format_args!(
-                "{:>7} {:>4} {:>5} {:>8} {:>18} {:>17} {:>17} {:>11}\n",
+                "{:>7} {:>4} {:>5} {:>8} {:>17} {:>13} {:>17} {:>14} {:>9}\n",
                 t.pid,
                 t.prio,
                 prio_to_nice(t.prio),
@@ -169,6 +170,7 @@ impl PreprocessedReport {
                 t.comm,
                 t.total_cpu_time_ns,
                 t.total_wait_time_ns,
+                t.nr_wait_switches,
                 t.nr_switches,
             ))?;
         }
