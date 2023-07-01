@@ -24,7 +24,8 @@ char lua_script_update_stats_task_wait_ends_sha1_hash[41] = "";
  * @param KEYS[6] pid:last_ktime_ns
  * @param KEYS[7] pid:sched_stats_start_time_ns
  * @param KEYS[8] pid:nr_switches
- * @param KEYS[9] RUNNING_PID_SET
+ * @param KEYS[9] pid:nr_wait_switches
+ * @param KEYS[10] RUNNING_PID_SET
  *
  * @param ARGV[1] ktime_ns
  * @param ARGV[2] comm
@@ -55,8 +56,10 @@ const char *lua_script_track_task =
     "redis.call('PERSIST', KEYS[7])\n"
     "redis.call('SET', KEYS[8], 0) -- pid:nr_switches\n"
     "redis.call('PERSIST', KEYS[8])\n"
+    "redis.call('SET', KEYS[9], 0) -- pid:nr_wait_switches\n"
+    "redis.call('PERSIST', KEYS[9])\n"
 
-    "redis.call('SADD', KEYS[9], pid)\n";
+    "redis.call('SADD', KEYS[10], pid)\n";
 
 /**
  * @brief Lua transaction script for untracking a task
@@ -73,8 +76,9 @@ const char *lua_script_track_task =
  * @param KEYS[6] pid:last_ktime_ns
  * @param KEYS[7] pid:sched_stats_start_time_ns
  * @param KEYS[8] pid:nr_switches
- * @param KEYS[9] RUNNING_PID_SET
- * @param KEYS[10] EXPIRED_PID_SET
+ * @param KEYS[9] pid:nr_wait_switches
+ * @param KEYS[10] RUNNING_PID_SET
+ * @param KEYS[11] EXPIRED_PID_SET
  *
  * @param ARGV[1] ktime_ns
  * @param ARGV[2] pid
@@ -99,11 +103,12 @@ const char *lua_script_untrack_task =
     "redis.call('EXPIRE', KEYS[6], 300)\n"
     "redis.call('EXPIRE', KEYS[7], 300)\n"
     "redis.call('EXPIRE', KEYS[8], 300)\n"
+    "redis.call('EXPIRE', KEYS[9], 300)\n"
 
-    "redis.call('SREM', KEYS[9], pid)\n"
+    "redis.call('SREM', KEYS[10], pid)\n"
 
-    "redis.call('ZREM', KEYS[10], 0, ktime_ns)\n"
-    "redis.call('ZADD', KEYS[10], pid_expiry_time_ns, pid)\n";
+    "redis.call('ZREMRANGEBYSCORE', KEYS[11], 0, ktime_ns)\n"
+    "redis.call('ZADD', KEYS[11], pid_expiry_time_ns, pid)\n";
 
 /**
  * @brief Lua transaction script that will modify the time statistics for a task
@@ -121,7 +126,8 @@ const char *lua_script_untrack_task =
  * @param KEYS[6] pid:prio
  * @param KEYS[7] pid:sched_stats_start_time_ns
  * @param KEYS[8] pid:nr_switches
- * @param KEYS[9] RUNNING_PID_SET
+ * @param KEYS[9] pid:nr_wait_switches
+ * @param KEYS[10] RUNNING_PID_SET
  *
  * @param ARGV[1] ktime_ns
  *
@@ -165,8 +171,10 @@ const char *lua_script_update_stats_task_enters_cpu =
     "   redis.call('PERSIST', KEYS[7])\n"
     "   redis.call('SET', KEYS[8], 0) -- pid:nr_switches\n"
     "   redis.call('PERSIST', KEYS[8])\n"
+    "   redis.call('SET', KEYS[9], 0) -- pid:nr_wait_switches\n"
+    "   redis.call('PERSIST', KEYS[9])\n"
 
-    "   redis.call('SADD', KEYS[9], pid)\n"
+    "   redis.call('SADD', KEYS[10], pid)\n"
     "   last_ktime_ns = ktime_ns\n"
     "end\n"
     "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
@@ -185,13 +193,14 @@ const char *lua_script_update_stats_task_enters_cpu =
  * @param KEYS[1] pid:last_ktime_ns
  * @param KEYS[2] pid:last_seen_state
  * @param KEYS[3] pid:total_cpu_time_ns
+ * @param KEYS[4] pid:nr_wait_switches
  *
  * @param ARGV[1] ktime_ns
  * @param ARGV[2] trace_sched_switch_state
  */
 const char *lua_script_update_stats_task_exits_cpu =
     "local ktime_ns = ARGV[1]\n"
-    "local trace_sched_switch_state = ARGV[2]\n"
+    "local trace_sched_switch_state = tonumber(ARGV[2])\n"
     "local last_ktime_ns = redis.call('GET', KEYS[1])\n"
     "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
     "\n"
@@ -200,6 +209,9 @@ const char *lua_script_update_stats_task_exits_cpu =
     "   redis.call('INCRBY', KEYS[3], delta)\n"
     "   redis.call('SET', KEYS[2], trace_sched_switch_state) -- trace_sched_switch_state\n"
     "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"
+    "end\n"
+    "if (trace_sched_switch_state == 0x0002) then -- TASK_WAITING\n"
+    "   redis.call('INCRBY', KEYS[4], 1)\n"
     "end\n";
 
 /**
@@ -247,7 +259,7 @@ const char *lua_script_update_stats_task_wait_ends =
     "local last_ktime_ns = redis.call('GET', KEYS[1])\n"
     "local last_seen_state = tonumber(redis.call('GET', KEYS[2]))\n"
     "\n"
-    "if (last_ktime_ns and tonumber(ktime_ns) >= tonumber(last_ktime_ns)) then -- TASK_RUNNING_RQ\n"
+    "if (last_ktime_ns and tonumber(ktime_ns) >= tonumber(last_ktime_ns) and last_seen_state == 0x0002) then -- TASK_RUNNING_RQ\n"
     "   local delta = tonumber(ktime_ns) - tonumber(last_ktime_ns)\n"
     "   redis.call('INCRBY', KEYS[3], delta)\n"
     "   redis.call('SET', KEYS[1], tonumber(ktime_ns))\n"

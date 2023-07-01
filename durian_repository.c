@@ -13,6 +13,7 @@ void repository_track_task(durian_ctx *ctx, int pid, const char comm[16], int pr
                           "%d:last_ktime_ns "
                           "%d:sched_stats_start_time_ns "
                           "%d:nr_switches "
+                          "%d:nr_wait_switches "
                           "%s "
                           "%llu "
                           "%s "
@@ -20,8 +21,8 @@ void repository_track_task(durian_ctx *ctx, int pid, const char comm[16], int pr
                           "%d "
                           "%d",
                           lua_script_track_task_sha1_hash,
-                          9,
-                          pid, pid, pid, pid, pid, pid, pid, pid, RUNNING_PID_SET,
+                          10,
+                          pid, pid, pid, pid, pid, pid, pid, pid, pid, RUNNING_PID_SET,
                           ktime_ns,
                           comm,
                           prio,
@@ -42,14 +43,15 @@ void repository_untrack_task(durian_ctx *ctx, int pid, unsigned long long ktime_
                           "%d:last_ktime_ns "
                           "%d:sched_stats_start_time_ns "
                           "%d:nr_switches "
+                          "%d:nr_wait_switches "
                           "%s "
                           "%s "
                           "%llu "
                           "%d "
                           "%d",
                           lua_script_untrack_task_sha1_hash,
-                          10,
-                          pid, pid, pid, pid, pid, pid, pid, pid, RUNNING_PID_SET, EXPIRED_PID_SET,
+                          11,
+                          pid, pid, pid, pid, pid, pid, pid, pid, pid, RUNNING_PID_SET, EXPIRED_PID_SET,
                           ktime_ns,
                           pid,
                           __TASK_STOPPED);
@@ -68,6 +70,7 @@ void repository_update_stats_task_enters_cpu(durian_ctx *ctx, int pid, const cha
                           "%d:prio "
                           "%d:sched_stats_start_time_ns "
                           "%d:nr_switches "
+                          "%d:nr_wait_switches "
                           "%s "
                           "%llu "
                           "%s "
@@ -75,8 +78,8 @@ void repository_update_stats_task_enters_cpu(durian_ctx *ctx, int pid, const cha
                           "%d "
                           "%d ",
                           lua_script_update_stats_task_enters_cpu_sha1_hash,
-                          9,
-                          pid, pid, pid, pid, pid, pid, pid, pid, RUNNING_PID_SET,
+                          10,
+                          pid, pid, pid, pid, pid, pid, pid, pid, pid, RUNNING_PID_SET,
                           ktime_ns,
                           comm,
                           prio,
@@ -92,11 +95,12 @@ void repository_update_stats_task_exits_cpu(durian_ctx *ctx, int pid, unsigned l
                           "%d:last_ktime_ns "
                           "%d:last_seen_state "
                           "%d:total_cpu_time_ns "
+                          "%d:nr_wait_switches "
                           "%llu "
                           "%d",
                           lua_script_update_stats_task_exits_cpu_sha1_hash,
-                          3,
-                          pid, pid, pid,
+                          4,
+                          pid, pid, pid, pid,
                           ktime_ns,
                           trace_sched_switch_state);
 }
