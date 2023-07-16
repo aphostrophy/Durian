@@ -7,8 +7,30 @@ use crate::models::task_statistics::TaskStatistics;
 #[test]
 fn get_tasks_average_io_time_standard_non_zero() {
     let tasks_stats = vec![
-        TaskStatistics::new(0, "A".to_string(), 120, 33000, 130000, 0, 99999999, 0, 30),
-        TaskStatistics::new(0, "B".to_string(), 120, 66000, 130000, 0, 99999999, 0, 45),
+        TaskStatistics::new(
+            0,
+            "A".to_string(),
+            120,
+            33000,
+            130000,
+            0,
+            99999999,
+            0,
+            30,
+            0,
+        ),
+        TaskStatistics::new(
+            0,
+            "B".to_string(),
+            120,
+            66000,
+            130000,
+            0,
+            99999999,
+            0,
+            45,
+            0,
+        ),
     ];
     let avg = get_tasks_average_io_time(&tasks_stats);
     assert_eq!(avg, 49500.0);
@@ -24,8 +46,30 @@ fn get_tasks_average_io_time_empty_zero() {
 #[test]
 fn get_tasks_average_cpu_time_standard_non_zero() {
     let tasks_stats = vec![
-        TaskStatistics::new(0, "A".to_string(), 120, 33000, 260000, 0, 99999999, 0, 30),
-        TaskStatistics::new(0, "B".to_string(), 120, 66000, 130000, 0, 99999999, 0, 45),
+        TaskStatistics::new(
+            0,
+            "A".to_string(),
+            120,
+            33000,
+            260000,
+            0,
+            99999999,
+            0,
+            30,
+            0,
+        ),
+        TaskStatistics::new(
+            0,
+            "B".to_string(),
+            120,
+            66000,
+            130000,
+            0,
+            99999999,
+            0,
+            45,
+            0,
+        ),
     ];
     let avg = get_tasks_average_cpu_time(&tasks_stats);
     assert_eq!(avg, 195000.0);
@@ -61,6 +105,7 @@ fn get_tasks_normalized_cpu_fair_share_ns_equal_total_cpu() {
             260000,
             130000,
             30,
+            0,
         ),
         TaskStatistics::new(
             1,
@@ -72,6 +117,7 @@ fn get_tasks_normalized_cpu_fair_share_ns_equal_total_cpu() {
             130000,
             000000,
             45,
+            0,
         ),
         TaskStatistics::new(
             2,
@@ -83,6 +129,7 @@ fn get_tasks_normalized_cpu_fair_share_ns_equal_total_cpu() {
             390000,
             260000,
             45,
+            0,
         ),
     ];
     let tasks_normalized_cpu_fair_share_ns =
@@ -97,7 +144,18 @@ fn get_tasks_normalized_cpu_fair_share_ns_equal_total_cpu() {
 fn get_tasks_normalized_cpu_fair_share_ns_unequal_total_cpu() {
     let period = 20_000_000;
     let tasks_stats = vec![
-        TaskStatistics::new(0, "A".to_string(), 120, 33000, 50000, 0, 200000, 100000, 30),
+        TaskStatistics::new(
+            0,
+            "A".to_string(),
+            120,
+            33000,
+            50000,
+            0,
+            200000,
+            100000,
+            30,
+            0,
+        ),
         TaskStatistics::new(
             1,
             "B".to_string(),
@@ -108,6 +166,7 @@ fn get_tasks_normalized_cpu_fair_share_ns_unequal_total_cpu() {
             300000,
             000000,
             45,
+            0,
         ),
     ];
     let tasks_normalized_cpu_fair_share_ns =
@@ -128,8 +187,30 @@ fn get_tasks_weight_sum_empty_case() {
 #[test]
 fn get_tasks_weight_sum_multiple_tasks() {
     let tasks_stats = vec![
-        TaskStatistics::new(0, "A".to_string(), 100, 33000, 260000, 0, 99999999, 0, 30),
-        TaskStatistics::new(0, "B".to_string(), 120, 66000, 130000, 0, 99999999, 0, 45),
+        TaskStatistics::new(
+            0,
+            "A".to_string(),
+            100,
+            33000,
+            260000,
+            0,
+            99999999,
+            0,
+            30,
+            0,
+        ),
+        TaskStatistics::new(
+            0,
+            "B".to_string(),
+            120,
+            66000,
+            130000,
+            0,
+            99999999,
+            0,
+            45,
+            0,
+        ),
     ];
     let weight_sum = get_tasks_weight_sum(&tasks_stats);
     assert_eq!(weight_sum, 89785);
